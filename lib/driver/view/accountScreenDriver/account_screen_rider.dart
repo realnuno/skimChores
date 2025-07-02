@@ -1,3 +1,4 @@
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,14 +8,14 @@ import 'package:new_uber/common/controller/services/mobile_auth_services.dart';
 import 'package:new_uber/constant/utils/colors.dart';
 import 'package:new_uber/constant/utils/textStyles.dart';
 
-class AccountScreenRider extends StatefulWidget {
-  const AccountScreenRider({super.key});
+class AccountScreenDriver extends StatefulWidget {
+  const AccountScreenDriver({super.key});
 
   @override
-  State<AccountScreenRider> createState() => _AccountScreenRiderState();
+  State<AccountScreenDriver> createState() => _AccountScreenDriverState();
 }
 
-class _AccountScreenRiderState extends State<AccountScreenRider> {
+class _AccountScreenDriverState extends State<AccountScreenDriver> {
   List accountTopButtons = [
     [CupertinoIcons.shield_fill, 'Help'],
     [CupertinoIcons.creditcard_fill, 'Payment'],
@@ -191,8 +192,8 @@ class _AccountScreenRiderState extends State<AccountScreenRider> {
               itemCount: accountButtons.length,
               itemBuilder: (context, index) {
                 return InkWell(
-                  onTap: (){
-                    if(index == (accountButtons.length-1)){
+                  onTap: () {
+                    if (index == (accountButtons.length - 1)) {
                       MobileAuthServices.signOut(context);
                     }
                   },

@@ -13,7 +13,7 @@ import 'package:new_uber/common/view/authScreens/otp_screen.dart';
 import 'package:new_uber/common/view/registrationScreen/registration_screen.dart';
 import 'package:new_uber/common/view/signInLogic/sign_in_logic.dart';
 import 'package:new_uber/constant/constants.dart';
-import 'package:new_uber/driver/view/bottom_nav_bar_driver/bottom_nav_bar_driver.dart';
+import 'package:new_uber/driver/view/bottomNavBarDriver/bottom_nav_bar_driver.dart';
 import 'package:new_uber/rider/view/bottomNavBar/bottom_nav_bar_rider.dart';
 
 class MobileAuthServices {

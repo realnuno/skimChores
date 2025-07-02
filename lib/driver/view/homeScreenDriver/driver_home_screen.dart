@@ -4,18 +4,17 @@ import 'dart:developer';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_swipe_button/flutter_swipe_button.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:new_uber/common/controller/services/location_services.dart';
-import 'package:new_uber/common/model/profileDataModel.dart';
+import 'package:new_uber/common/model/profile_data_model.dart';
 import 'package:new_uber/constant/constants.dart';
 import 'package:new_uber/constant/utils/colors.dart';
 import 'package:new_uber/constant/utils/textStyles.dart';
-import 'package:new_uber/driver/controller/services/geofiberServices.dart';
-import 'package:new_uber/driver/controller/services/mapsProviderDriver.dart';
+import 'package:new_uber/driver/controller/services/geofire_services.dart';
+import 'package:new_uber/driver/controller/services/maps_provider_driver.dart';
 
 class HomeScreenDriver extends StatefulWidget {
   const HomeScreenDriver({super.key});

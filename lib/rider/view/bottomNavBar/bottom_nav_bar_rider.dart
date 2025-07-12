@@ -1,20 +1,18 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:new_uber/rider/view/homeScreen/rider_home_screen.dart';
-import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
-import 'package:new_uber/common/controller/services/firebasePushNotificatinServices/pushNotificationServices.dart';
-import 'package:new_uber/common/controller/services/profileDataCRUDServices.dart';
+import 'package:new_uber/common/controller/services/firebasePushNotificatinServices/push_notification_services.dart';
+import 'package:new_uber/common/controller/services/profile_data_crud_services.dart';
 import 'package:new_uber/common/model/profile_data_model.dart';
 import 'package:new_uber/constant/constants.dart';
 import 'package:new_uber/constant/utils/colors.dart';
 import 'package:new_uber/rider/controller/provider/bottomNavBarRiderProvider/bottom_nav_bar_rider_provider.dart';
 import 'package:new_uber/rider/view/account/account_screen_rider.dart';
 import 'package:new_uber/rider/view/activity/activity_screen.dart';
-import 'package:new_uber/rider/view/homeScreen/home_screen_builder.dart';
 import 'package:new_uber/rider/view/serviceScreen/service_screen.dart';
 
 class BottomNavBarRider extends StatefulWidget {

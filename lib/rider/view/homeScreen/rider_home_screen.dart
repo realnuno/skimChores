@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:new_uber/rider/view/selectPickupAndDropLocationScreen/select_pickup_n_drop_location_screen.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:sizer/sizer.dart';
 import 'package:new_uber/constant/utils/colors.dart';
 import 'package:new_uber/constant/utils/textStyles.dart';
@@ -75,7 +77,9 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
         children: [
           // Where to button
           InkWell(
-            onTap: () {},
+            onTap: () {
+              Navigator.push(context, PageTransition(child: const PickupAndDropLocationScreen(), type: PageTransitionType.rightToLeft));
+            },
             child: Container(padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 2.h),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(

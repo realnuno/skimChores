@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "671293098390",
+    "firebase_url": "https://skimchores-default-rtdb.firebaseio.com",
     "project_id": "skimchores",
     "storage_bucket": "skimchores.firebasestorage.app"
   },

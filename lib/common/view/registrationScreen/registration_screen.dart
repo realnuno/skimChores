@@ -114,7 +114,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         context: context,
       );
     } else {
-      String profilePicURL = await ImageServices.uploadImageToFirebaseStorage(
+      String? profilePicURL = await ImageServices.uploadImageToFirebaseStorage(
           image: File(profilePic!.path), context: context);
       ProfileDataModel profileData = ProfileDataModel(
         profilePicUrl: profilePicURL,
@@ -161,7 +161,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         context: context,
       );
     } else {
-      String profilePicURL = await ImageServices.uploadImageToFirebaseStorage(
+      String? profilePicURL = await ImageServices.uploadImageToFirebaseStorage(
           image: File(profilePic!.path), context: context);
       ProfileDataModel profileData = ProfileDataModel(
         profilePicUrl: profilePicURL,

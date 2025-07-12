@@ -3,16 +3,15 @@
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
-import 'package:new_uber/common/controller/services/firebasePushNotificatinServices/pushNotificationServices.dart';
+import 'package:new_uber/common/controller/services/firebasePushNotificatinServices/push_notification_services.dart';
 import 'package:new_uber/common/controller/services/profile_data_crud_services.dart';
 import 'package:new_uber/common/model/profile_data_model.dart';
 import 'package:new_uber/constant/constants.dart';
 import 'package:new_uber/constant/utils/colors.dart';
-import 'package:new_uber/driver/controller/services/bottom_nav_bar_driver_provider.dart
+import 'package:new_uber/driver/controller/services/bottom_nav_bar_driver_provider.dart';
 import 'package:new_uber/driver/view/accountScreenDriver/account_screen_rider.dart';
 import 'package:new_uber/driver/view/activityScreenDriver/activity_screen.dart';
 import 'package:new_uber/driver/view/homeScreenDriver/home_screen_builder.dart';

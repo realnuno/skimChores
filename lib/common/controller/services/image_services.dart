@@ -11,40 +11,66 @@ import 'package:new_uber/constant/constants.dart';
 import 'package:uuid/uuid.dart';
 
 class ImageServices {
-  static getImageFromGallery({required BuildContext context}) async {
-    File selectedImage;
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 100,
-    );
-    XFile? filePick = pickedFile;
+  /// Pick image from gallery
+  static Future<File?> getImageFromGallery({
+    required BuildContext context,
+  }) async {
+    try {
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 100,
+      );
 
-    if (filePick != null) {
-      selectedImage = File(filePick.path);
-      log('The Image URL is \n$selectedImage');
-      return File(selectedImage.path);
-    } else {
+      if (pickedFile != null) {
+        final image = File(pickedFile.path);
+        log('Selected image path: ${image.path}');
+        return image;
+      } else {
+        ToastServices.sendScaffoldAlert(
+          msg: 'No Image Selected',
+          toastStatus: 'ERROR',
+          context: context,
+        );
+        return null;
+      }
+    } catch (e) {
+      log('Image picking error: $e');
       ToastServices.sendScaffoldAlert(
-        msg: 'No Image Selected',
+        msg: 'Failed to pick image',
         toastStatus: 'ERROR',
         context: context,
       );
-      return;
+      return null;
     }
   }
 
-  static uploadImageToFirebaseStorage({
+  /// Upload image to Firebase Storage
+  static Future<String?> uploadImageToFirebaseStorage({
     required File image,
     required BuildContext context,
   }) async {
-    String userID = auth.currentUser!.phoneNumber!;
-    Uuid uuid = const Uuid();
+    try {
+      if (auth.currentUser == null) {
+        throw Exception("User is not authenticated");
+      }
 
-    String imageName = '$userID${uuid.v1().toString()}';
-    Reference ref = storage.ref().child('Profile_Images').child(imageName);
-    await ref.putFile(File(image.path));
-    String imageURL = await ref.getDownloadURL();
-    log('Uploaded Image to Firebase');
-    return imageURL;
+      final String userID = auth.currentUser!.phoneNumber!;
+      final String imageName = '$userID-${const Uuid().v1()}';
+      final Reference ref = storage.ref().child('Profile_Images').child(imageName);
+
+      final uploadTask = await ref.putFile(image);
+      final imageUrl = await uploadTask.ref.getDownloadURL();
+
+      log('Uploaded image URL: $imageUrl');
+      return imageUrl;
+    } catch (e, st) {
+      log('Upload error: $e\n$st');
+      ToastServices.sendScaffoldAlert(
+        msg: 'Failed to upload image',
+        toastStatus: 'ERROR',
+        context: context,
+      );
+      return null;
+    }
   }
 }

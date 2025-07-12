@@ -13,12 +13,11 @@ import 'package:new_uber/common/controller/provider/location_provider.dart';
 import 'package:new_uber/common/controller/services/direction_services.dart';
 import 'package:new_uber/common/controller/services/location_services.dart';
 import 'package:new_uber/common/model/pickup_n_drop_location_model.dart';
-import 'package:new_uber/common/model/rideRequestModel.dart';
 import 'package:new_uber/common/model/searched_address_model.dart';
 import 'package:new_uber/constant/utils/colors.dart';
 import 'package:new_uber/constant/utils/textStyles.dart';
-import 'package:new_uber/rider/controller/provider/tripProvider/rideRequestProvider.dart';
-import 'package:new_uber/rider/view/bookARideScreen/bookARideScreen.dart';
+import 'package:new_uber/rider/controller/provider/tripProvider/ride_request_provider.dart';
+import 'package:new_uber/rider/view/bookARideScreen/book_a_ride_screen.dart';
 
 class PickupAndDropLocationScreen extends StatefulWidget {
   const PickupAndDropLocationScreen({super.key});

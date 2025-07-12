@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:new_uber/common/controller/services/location_services.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:new_uber/constant/constants.dart';
-import 'package:newuber/driver/controller/provider/location_provider_driver.dart';
+import 'package:new_uber/driver/controller/provider/location_provider_driver.dart';
 
 class GeoFireServices {
   static DatabaseReference databaseRef = FirebaseDatabase.instance

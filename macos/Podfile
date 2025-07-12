@@ -1,4 +1,4 @@
-platform :osx, '10.14'
+platform :macos, '10.14'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -38,5 +38,26 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_macos_build_settings(target)
+
+    target.build_configurations.each do |config|
+      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.14'
+
+      # Strip -G if present
+      %w[OTHER_CFLAGS OTHER_CPLUSPLUSFLAGS].each do |flag|
+        value = config.build_settings[flag]
+        config.build_settings[flag] = value.gsub('-G', '') if value&.include?('-G')
+      end
+
+      # 💥 Force arm64-only build
+      config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
+      config.build_settings['EXCLUDED_ARCHS[sdk=macosx*]'] = 'x86_64'
+    end
+  end
+
+  # Clean up xcconfig files just in case
+  Dir.glob('Pods/**/*.xcconfig') do |file|
+    text = File.read(file)
+    new_text = text.gsub('-G', '')
+    File.write(file, new_text) if new_text != text
   end
 end

@@ -4,7 +4,7 @@ import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
-// import 'package:new_uber/common/model/rideRequestModel.dart';
+import 'package:new_uber/common/model/ride_request_model.dart';
 import 'package:new_uber/constant/constants.dart';
 import 'package:new_uber/constant/utils/colors.dart';
 import 'package:new_uber/constant/utils/textStyles.dart';

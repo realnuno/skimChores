@@ -13,16 +13,24 @@ class _SignInLogicState extends State<SignInLogic> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      MobileAuthServices.checkAuthenticationAndNavigate(context: context);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await MobileAuthServices.checkAuthenticationAndNavigate(context: context);
     });
   }
+
 
 
   
 
   @override
   Widget build(BuildContext context) {
+    Scaffold(
+      backgroundColor: black,
+      body: const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      ),
+    );
+
     return Scaffold(backgroundColor: black,
       body: const Center(
         child: Image(image: AssetImage('assets/images/uberLogo/uber.png')),

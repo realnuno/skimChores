@@ -73,21 +73,24 @@ class MobileAuthServices {
     return false;
   }
 
-  static checkAuthenticationAndNavigate({required BuildContext context}) {
+  static Future<void> checkAuthenticationAndNavigate({required BuildContext context}) async {
     bool userIsAuthenticated = checkAuthentication();
-    userIsAuthenticated
-        ? checkUser(context)
-        : Navigator.pushAndRemoveUntil(
-            context,
-            PageTransition(
-              child: const LoginScreen(),
-              type: PageTransitionType.rightToLeft,
-            ),
-            (route) => false,
-          );
+    if (userIsAuthenticated) {
+      await checkUser(context); // also mark checkUser as async
+    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageTransition(
+          child: const LoginScreen(),
+          type: PageTransitionType.rightToLeft,
+        ),
+        (route) => false,
+      );
+    }
   }
 
-  static checkUser(BuildContext context) async {
+
+  static Future<void> checkUser(BuildContext context) async {
     bool userIsRegistered =
         await ProfileDataCRUDServices.checkForRegisteredUser(context);
 

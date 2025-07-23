@@ -12,7 +12,7 @@ import 'package:new_uber/constant/utils/colors.dart';
 
 class RideRequestProviderDriver extends ChangeNotifier {
   CameraPosition initialCameraPosition = const CameraPosition(
-    target: LatLng(37.4, -122),
+    target: LatLng(38.8462, -77.3064),
     zoom: 14,
   );
   Set<Marker> driverMarker = <Marker>{};
@@ -30,8 +30,12 @@ class RideRequestProviderDriver extends ChangeNotifier {
   bool movingFromCurrentLocationTopickupLocation = false;
   LatLng? rideAcceptLocation;
 
+
+
   updateTripPickupAndDropLoction(
-      PickupNDropLocationModel pickupData, PickupNDropLocationModel dropData) {
+    PickupNDropLocationModel pickupData,
+    PickupNDropLocationModel dropData,
+  ) {
     pickupLocation = pickupData;
     dropLocation = dropData;
     notifyListeners();
@@ -64,34 +68,46 @@ class RideRequestProviderDriver extends ChangeNotifier {
 
   createIcons(BuildContext context) {
     if (pickupIconForMap == null) {
-      ImageConfiguration imageConfiguration =
-          createLocalImageConfiguration(context, size: const Size(2, 2));
-      BitmapDescriptor.fromAssetImage(
-              imageConfiguration, 'assets/images/icons/pickupPngSmall.png')
+      ImageConfiguration imageConfiguration = createLocalImageConfiguration(
+        context,
+        size: const Size(2, 2),
+      );
+      BitmapDescriptor.asset(
+            imageConfiguration,
+            'assets/images/icons/pickupPngSmall.png',
+          ) // Fixed
           .then((icon) {
-        pickupIconForMap = icon;
-        notifyListeners();
-      });
-      if (destinationIconForMap == null) {
-        ImageConfiguration imageConfiguration =
-            createLocalImageConfiguration(context, size: const Size(2, 2));
-        BitmapDescriptor.fromAssetImage(
-                imageConfiguration, 'assets/images/icons/dropPngSmall.png')
-            .then((icon) {
-          destinationIconForMap = icon;
-          notifyListeners();
-        });
-      }
-      if (carIconForMap == null) {
-        ImageConfiguration imageConfiguration =
-            createLocalImageConfiguration(context, size: const Size(2, 2));
-        BitmapDescriptor.fromAssetImage(
-                imageConfiguration, 'assets/images/vehicle/mapCar.png')
-            .then((icon) {
-          carIconForMap = icon;
-          notifyListeners();
-        });
-      }
+            pickupIconForMap = icon;
+            notifyListeners();
+          });
+    }
+    if (destinationIconForMap == null) {
+      ImageConfiguration imageConfiguration = createLocalImageConfiguration(
+        context,
+        size: const Size(2, 2),
+      );
+      BitmapDescriptor.asset(
+            imageConfiguration,
+            'assets/images/icons/dropPngSmall.png',
+          ) // Fixed
+          .then((icon) {
+            destinationIconForMap = icon;
+            notifyListeners();
+          });
+    }
+    if (carIconForMap == null) {
+      ImageConfiguration imageConfiguration = createLocalImageConfiguration(
+        context,
+        size: const Size(2, 2),
+      );
+      BitmapDescriptor.asset(
+            imageConfiguration,
+            'assets/images/vehicle/mapCar.png',
+          ) // Fixed
+          .then((icon) {
+            carIconForMap = icon;
+            notifyListeners();
+          });
     }
   }
 
@@ -127,10 +143,7 @@ class RideRequestProviderDriver extends ChangeNotifier {
     driverMarker.add(destinationMarker);
     notifyListeners();
     if (updateMarkerBool == true) {
-      await Future.delayed(
-          const Duration(
-            seconds: 5,
-          ), () async {
+      await Future.delayed(const Duration(seconds: 5), () async {
         await updateMarker();
       });
     }
@@ -140,15 +153,15 @@ class RideRequestProviderDriver extends ChangeNotifier {
     PolylinePoints polylinePoints = PolylinePoints();
     polylineCoordinatesList.clear();
     polylineSet.clear();
-    List<PointLatLng> data =
-        polylinePoints.decodePolyline(directionDetails!.polylinePoints);
+    List<PointLatLng> data = polylinePoints.decodePolyline(
+      directionDetails!.polylinePoints,
+    );
 
     if (data.isNotEmpty) {
       for (var latLngPoints in data) {
-        polylineCoordinatesList.add(LatLng(
-          latLngPoints.latitude,
-          latLngPoints.longitude,
-        ));
+        polylineCoordinatesList.add(
+          LatLng(latLngPoints.latitude, latLngPoints.longitude),
+        );
       }
     }
     polyline = Polyline(

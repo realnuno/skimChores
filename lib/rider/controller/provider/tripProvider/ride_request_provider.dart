@@ -16,7 +16,7 @@ import 'package:new_uber/rider/model/nearby_drivers_model.dart';
 
 class RideRequestProvider extends ChangeNotifier {
   CameraPosition initialCameraPosition = const CameraPosition(
-    target: LatLng(37.4, -122),
+    target: LatLng(38.8462, -77.3064),
     zoom: 14,
   );
   Set<Marker> riderMarker = <Marker>{};
@@ -61,30 +61,40 @@ class RideRequestProvider extends ChangeNotifier {
     double uberPremierDurationPerMinute = 2.5;
     int uberXLDurationPerMinute = 3;
 
-    uberGoFare = (baseFare +
-            uberGoDistancePerKM *
-                double.parse(
-                    (directionDetails!.distanceInMeter / 1000).toString()) +
-            (uberGoDurationPerMinute * (directionDetails!.duration / 60)))
-        .round();
-    uberGoSedanFare = (baseFare +
-            uberGoSedanDistancePerKM *
-                double.parse(
-                    (directionDetails!.distanceInMeter / 1000).toString()) +
-            (uberGoSedanDurationPerMinute * (directionDetails!.duration / 60)))
-        .round();
-    uberPremierFare = (baseFare +
-            uberPremierDistancePerKM *
-                double.parse(
-                    (directionDetails!.distanceInMeter / 1000).toString()) +
-            (uberPremierDurationPerMinute * (directionDetails!.duration / 60)))
-        .round();
-    uberXLFare = (baseFare +
-            uberXLDistancePerKM *
-                double.parse(
-                    (directionDetails!.distanceInMeter / 1000).toString()) +
-            (uberXLDurationPerMinute * (directionDetails!.duration / 60)))
-        .round();
+    uberGoFare =
+        (baseFare +
+                uberGoDistancePerKM *
+                    double.parse(
+                      (directionDetails!.distanceInMeter / 1000).toString(),
+                    ) +
+                (uberGoDurationPerMinute * (directionDetails!.duration / 60)))
+            .round();
+    uberGoSedanFare =
+        (baseFare +
+                uberGoSedanDistancePerKM *
+                    double.parse(
+                      (directionDetails!.distanceInMeter / 1000).toString(),
+                    ) +
+                (uberGoSedanDurationPerMinute *
+                    (directionDetails!.duration / 60)))
+            .round();
+    uberPremierFare =
+        (baseFare +
+                uberPremierDistancePerKM *
+                    double.parse(
+                      (directionDetails!.distanceInMeter / 1000).toString(),
+                    ) +
+                (uberPremierDurationPerMinute *
+                    (directionDetails!.duration / 60)))
+            .round();
+    uberXLFare =
+        (baseFare +
+                uberXLDistancePerKM *
+                    double.parse(
+                      (directionDetails!.distanceInMeter / 1000).toString(),
+                    ) +
+                (uberXLDurationPerMinute * (directionDetails!.duration / 60)))
+            .round();
     notifyListeners();
   }
 
@@ -114,15 +124,15 @@ class RideRequestProvider extends ChangeNotifier {
     PolylinePoints polylinePoints = PolylinePoints();
     polylineCoordinatesList.clear();
     polylineSet.clear();
-    List<PointLatLng> data =
-        polylinePoints.decodePolyline(directionDetails!.polylinePoints);
+    List<PointLatLng> data = polylinePoints.decodePolyline(
+      directionDetails!.polylinePoints,
+    );
 
     if (data.isNotEmpty) {
       for (var latLngPoints in data) {
-        polylineCoordinatesList.add(LatLng(
-          latLngPoints.latitude,
-          latLngPoints.longitude,
-        ));
+        polylineCoordinatesList.add(
+          LatLng(latLngPoints.latitude, latLngPoints.longitude),
+        );
       }
     }
     polyline = Polyline(
@@ -174,7 +184,7 @@ class RideRequestProvider extends ChangeNotifier {
   }
 
   updateMarker() async {
-    riderMarker = <Marker>{};
+    riderMarker.clear();
     Marker pickupMarker = Marker(
       markerId: const MarkerId('PickupMarker'),
       position: LatLng(pickupLocation!.latitude!, pickupLocation!.longitude!),
@@ -199,7 +209,7 @@ class RideRequestProvider extends ChangeNotifier {
         riderMarker.add(carMarker);
       }
     }
-   if (updateMarkerBool == true) {
+    if (updateMarkerBool == true) {
       LatLng crrLocation = await LocationServices.getCurrentLocation();
       Marker carMarker = Marker(
         markerId: MarkerId(auth.currentUser!.phoneNumber!),
@@ -212,25 +222,24 @@ class RideRequestProvider extends ChangeNotifier {
     riderMarker.add(destinationMarker);
     notifyListeners();
     if (updateMarkerBool == true) {
-      await Future.delayed(
-          const Duration(
-            seconds: 5,
-          ), () async {
+      await Future.delayed(const Duration(seconds: 5), () async {
         await updateMarker();
       });
     }
   }
 
-// ! Nearby Drivers Functions
-sendPushNotificationToNearbyDrivers()async{
-  for(var driver in nearbyDrivers){
-     ProfileDataModel driverProfileData =
-            await ProfileDataCRUDServices.getProfileDataFromRealTimeDatabase(
-                driver.driverID);
-        await PushNotificationServices.sendRideRequestToNearbyDrivers(
-            driverProfileData.cloudMessagingToken!);
+  // ! Nearby Drivers Functions
+  sendPushNotificationToNearbyDrivers() async {
+    for (var driver in nearbyDrivers) {
+      ProfileDataModel driverProfileData =
+          await ProfileDataCRUDServices.getProfileDataFromRealTimeDatabase(
+            driver.driverID,
+          );
+      await PushNotificationServices.sendRideRequestToNearbyDrivers(
+        driverProfileData.cloudMessagingToken!,
+      );
+    }
   }
-}
 
   updateFetchNearbyDrivers(bool newStatus) {
     fetchNearbyDrivers = newStatus;
@@ -243,15 +252,17 @@ sendPushNotificationToNearbyDrivers()async{
   }
 
   removeDriver(String driverID) {
-    int index =
-        nearbyDrivers.indexWhere((element) => element.driverID == driverID);
+    int index = nearbyDrivers.indexWhere(
+      (element) => element.driverID == driverID,
+    );
     nearbyDrivers.removeAt(index);
     notifyListeners();
   }
 
   updateNearbyLocation(NearByDriversModel driver) {
-    int index = nearbyDrivers
-        .indexWhere((element) => element.driverID == driver.driverID);
+    int index = nearbyDrivers.indexWhere(
+      (element) => element.driverID == driver.driverID,
+    );
     nearbyDrivers[index].longitude = driver.longitude;
     nearbyDrivers[index].latitude = driver.latitude;
     notifyListeners();

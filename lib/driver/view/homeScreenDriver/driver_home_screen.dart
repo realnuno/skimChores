@@ -149,7 +149,7 @@ class _HomeScreenDriverState extends State<HomeScreenDriver> {
                 return GoogleMap(
                   initialCameraPosition: mapProvider.initialCameraPosition,
                   mapType: MapType.normal,
-                  myLocationButtonEnabled: false,
+                  myLocationButtonEnabled: true,
                   myLocationEnabled: true,
                   zoomControlsEnabled: true,
                   zoomGesturesEnabled: true,

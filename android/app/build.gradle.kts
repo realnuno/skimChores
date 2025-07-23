@@ -43,6 +43,10 @@ android {
     }
 }
 
+dependencies {
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+}
+
 flutter {
     source = "../.."
 }

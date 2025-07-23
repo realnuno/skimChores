@@ -1,4 +1,3 @@
-
 // ignore_for_file: use_build_context_synchronously
 import 'dart:async';
 import 'dart:convert';
@@ -24,7 +23,9 @@ class LocationServices {
       }
     }
     Position currentPosition = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.bestForNavigation,
+      locationSettings: LocationSettings(
+        accuracy: LocationAccuracy.bestForNavigation,
+      ),
     );
     LatLng currentLocation = LatLng(
       currentPosition.latitude,
@@ -33,20 +34,25 @@ class LocationServices {
     return currentLocation;
   }
 
-  static Future getAddressFromLatLng(
-      {required LatLng position, required BuildContext context}) async {
+  static Future getAddressFromLatLng({
+    required LatLng position,
+    required BuildContext context,
+  }) async {
     final api = Uri.parse(APIs.geoCoadingAPI(position));
     try {
       var response = await http
-          .get(api, headers: {'Content-Type': 'application/json'}).timeout(
-              const Duration(seconds: 60), onTimeout: () {
-        ToastServices.sendScaffoldAlert(
-          msg: 'Opps! Connection Timed Out',
-          toastStatus: 'ERROR',
-          context: context,
-        );
-        throw TimeoutException('Connection Timed Out');
-      });
+          .get(api, headers: {'Content-Type': 'application/json'})
+          .timeout(
+            const Duration(seconds: 60),
+            onTimeout: () {
+              ToastServices.sendScaffoldAlert(
+                msg: 'Opps! Connection Timed Out',
+                toastStatus: 'ERROR',
+                context: context,
+              );
+              throw TimeoutException('Connection Timed Out');
+            },
+          );
 
       if (response.statusCode == 200) {
         var decodedResponse = jsonDecode(response.body);
@@ -65,30 +71,37 @@ class LocationServices {
     }
   }
 
-  static Future getSearchedAddress(
-      {required String placeName, required BuildContext context}) async {
+  static Future getSearchedAddress({
+    required String placeName,
+    required BuildContext context,
+  }) async {
     List<SearchedAddressModel> address = [];
     final api = Uri.parse(APIs.placesAPI(placeName));
     try {
       var response = await http
-          .get(api, headers: {'Content-Type': 'application/json'}).timeout(
-              const Duration(seconds: 60), onTimeout: () {
-        ToastServices.sendScaffoldAlert(
-          msg: 'Opps! Connection Timed Out',
-          toastStatus: 'ERROR',
-          context: context,
-        );
-        throw TimeoutException('Connection Timed Out');
-      });
+          .get(api, headers: {'Content-Type': 'application/json'})
+          .timeout(
+            const Duration(seconds: 60),
+            onTimeout: () {
+              ToastServices.sendScaffoldAlert(
+                msg: 'Opps! Connection Timed Out',
+                toastStatus: 'ERROR',
+                context: context,
+              );
+              throw TimeoutException('Connection Timed Out');
+            },
+          );
 
       if (response.statusCode == 200) {
         var decodedResponse = jsonDecode(response.body);
         for (var data in decodedResponse['predictions']) {
-          address.add(SearchedAddressModel(
-            mainName: data['structured_formatting']['main_text'],
-            secondaryName: data['structured_formatting']['secondary_text'],
-            placeID: data['place_id'],
-          ));
+          address.add(
+            SearchedAddressModel(
+              mainName: data['structured_formatting']['main_text'],
+              secondaryName: data['structured_formatting']['secondary_text'],
+              placeID: data['place_id'],
+            ),
+          );
         }
         context.read<LocationProvider>().updateSearchedAddress(address);
       }
@@ -97,31 +110,38 @@ class LocationServices {
     }
   }
 
-  static getLatLngFromPlaceID(SearchedAddressModel address,
-      BuildContext context, String locationType) async {
+  static getLatLngFromPlaceID(
+    SearchedAddressModel address,
+    BuildContext context,
+    String locationType,
+  ) async {
     final api = Uri.parse(APIs.getLatLngFromPlaceIDAPI(address.placeID));
 
     try {
       var response = await http
-          .get(api, headers: {'Content-Type': 'application/json'}).timeout(
-              const Duration(seconds: 60), onTimeout: () {
-        ToastServices.sendScaffoldAlert(
-          msg: 'Opps! Connection Timed Out',
-          toastStatus: 'ERROR',
-          context: context,
-        );
-        throw TimeoutException('Connection Timed Out');
-      });
+          .get(api, headers: {'Content-Type': 'application/json'})
+          .timeout(
+            const Duration(seconds: 60),
+            onTimeout: () {
+              ToastServices.sendScaffoldAlert(
+                msg: 'Opps! Connection Timed Out',
+                toastStatus: 'ERROR',
+                context: context,
+              );
+              throw TimeoutException('Connection Timed Out');
+            },
+          );
       if (response.statusCode == 200) {
         var decodedResponse = jsonDecode(response.body);
 
         var locationLatLng = decodedResponse['result']['geometry']['location'];
         PickupNDropLocationModel model = PickupNDropLocationModel(
-            name: address.mainName,
-            description: address.secondaryName,
-            placeID: address.placeID,
-            latitude: locationLatLng['lat'],
-            longitude: locationLatLng['lng']);
+          name: address.mainName,
+          description: address.secondaryName,
+          placeID: address.placeID,
+          latitude: locationLatLng['lat'],
+          longitude: locationLatLng['lng'],
+        );
 
         if (locationType == 'DROP') {
           context.read<LocationProvider>().updateDropLocation(model);

@@ -1,14 +1,16 @@
 import 'dart:developer';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:provider/provider.dart';
 import 'package:new_uber/rider/controller/provider/tripProvider/ride_request_provider.dart';
 import 'package:new_uber/rider/model/nearby_drivers_model.dart';
 
 class NearbyDriverServices {
-  static getNearbyDrivers(LatLng pickupLocation, BuildContext context) {
+  static getNearbyDrivers(
+    LatLng pickupLocation,
+    RideRequestProvider rideRequestProvider,
+  ) {
     Geofire.initialize('OnlineDrivers');
+
     Geofire.queryAtLocation(
       pickupLocation.latitude,
       pickupLocation.longitude,
@@ -18,6 +20,7 @@ class NearbyDriverServices {
       if (event != null) {
         log('Event is Not Null');
         var callback = event['callBack'];
+
         switch (callback) {
           case Geofire.onKeyEntered:
             NearByDriversModel model = NearByDriversModel(
@@ -25,35 +28,32 @@ class NearbyDriverServices {
               latitude: event['latitude'],
               longitude: event['longitude'],
             );
-            context.read<RideRequestProvider>().addDriver(model);
-            if (context.read<RideRequestProvider>().fetchNearbyDrivers ==
-                true) {
-              context.read<RideRequestProvider>().updateMarker();
+            rideRequestProvider.addDriver(model);
+
+            if (rideRequestProvider.fetchNearbyDrivers == true) {
+              rideRequestProvider.updateMarker();
             }
             break;
+
           case Geofire.onKeyExited:
-            context
-                .read<RideRequestProvider>()
-                .removeDriver(event['key'].toString());
-            context.read<RideRequestProvider>().updateMarker();
+            rideRequestProvider.removeDriver(event['key'].toString());
+            rideRequestProvider.updateMarker();
             log('Driver Removed ${event['key']}');
             break;
+
           case Geofire.onKeyMoved:
             NearByDriversModel model = NearByDriversModel(
               driverID: event['key'],
               latitude: event['latitude'],
               longitude: event['longitude'],
             );
-            context.read<RideRequestProvider>().updateNearbyLocation(model);
-            context.read<RideRequestProvider>().updateMarker();
+            rideRequestProvider.updateNearbyLocation(model);
+            rideRequestProvider.updateMarker();
             break;
+
           case Geofire.onGeoQueryReady:
-            log(context
-                .read<RideRequestProvider>()
-                .nearbyDrivers
-                .length
-                .toString());
-            context.read<RideRequestProvider>().updateMarker();
+            log(rideRequestProvider.nearbyDrivers.length.toString());
+            rideRequestProvider.updateMarker();
             break;
         }
       } else {

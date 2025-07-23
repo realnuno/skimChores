@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/material.dart';
+import 'package:new_uber/driver/controller/provider/location_provider_driver.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:new_uber/common/controller/provider/auth_provider.dart';
@@ -18,6 +19,7 @@ import 'package:new_uber/rider/controller/provider/tripProvider/ride_request_pro
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
+    name: 'SkimChores',
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
@@ -48,6 +50,9 @@ class _UberState extends State<Uber> {
           ),
           ChangeNotifierProvider<LocationProvider>(
             create: (_) => LocationProvider(),
+          ),
+          ChangeNotifierProvider<LocationProviderDriver>(
+            create: (_) => LocationProviderDriver(),
           ),
           ChangeNotifierProvider<ProfileDataProvider>(
             create: (_) => ProfileDataProvider(),

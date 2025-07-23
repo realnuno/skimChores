@@ -19,7 +19,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController mobileNumberController = TextEditingController();
-  String selectedCountryCode = '+91';
+  String selectedCountryCode = '+1';
   bool loginButtonPressed = false;
   List loginButtonData = [
     [const AssetGen().google.svg(height: 3.h), 'Google'],

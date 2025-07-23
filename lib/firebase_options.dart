@@ -51,18 +51,18 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBvjnAEBOkyc9CvbK8_DXUR64_1l-3Byw0',
-    appId: '1:671293098390:android:1b0dfb96666b5fda1675b7',
-    messagingSenderId: '671293098390',
-    projectId: 'skimchores',
-    storageBucket: 'skimchores.firebasestorage.app',
+    appId: '1:273555337570:android:656136d59f4d5758a07c3b',
+    messagingSenderId: '273555337570',
+    projectId: 'skimchores-57f63',
+    storageBucket: 'skimchores-57f63.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCKUpIWEBPUvvUZc0fx1Gqk0PK7Z8pWfuA',
-    appId: '1:671293098390:ios:b75f41e0c1c4c5251675b7',
-    messagingSenderId: '671293098390',
-    projectId: 'skimchores',
-    storageBucket: 'skimchores.firebasestorage.app',
+    apiKey: 'AIzaSyAha1y-8tBL0sokgVge2F3CDogI7BixpmQ',
+    appId: '1:273555337570:ios:6c6a2b54779bbc2ba07c3b',
+    messagingSenderId: '273555337570',
+    projectId: 'skimchores-57f63',
+    storageBucket: 'skimchores-57f63.firebasestorage.app',
     iosBundleId: 'com.example.newUber',
   );
 }

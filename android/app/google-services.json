@@ -1,22 +1,22 @@
 {
   "project_info": {
-    "project_number": "671293098390",
-    "firebase_url": "https://skimchores-default-rtdb.firebaseio.com",
-    "project_id": "skimchores",
-    "storage_bucket": "skimchores.firebasestorage.app"
+    "project_number": "273555337570",
+    "firebase_url": "https://skimchores-57f63-default-rtdb.firebaseio.com",
+    "project_id": "skimchores-57f63",
+    "storage_bucket": "skimchores-57f63.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:671293098390:android:1b0dfb96666b5fda1675b7",
+        "mobilesdk_app_id": "1:273555337570:android:656136d59f4d5758a07c3b",
         "android_client_info": {
-          "package_name": "com.example.new_uber"
+          "package_name": "com.application.skimChores"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBvjnAEBOkyc9CvbK8_DXUR64_1l-3Byw0"
+          "current_key": "AIzaSyARKQstrWHkqCjC9Mjzi989QktjYkT4O0Q"
         }
       ],
       "services": {

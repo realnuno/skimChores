@@ -26,6 +26,7 @@ class ImageServices {
         log('Selected image path: ${image.path}');
         return image;
       } else {
+        if (!context.mounted) return null; 
         ToastServices.sendScaffoldAlert(
           msg: 'No Image Selected',
           toastStatus: 'ERROR',
@@ -35,6 +36,7 @@ class ImageServices {
       }
     } catch (e) {
       log('Image picking error: $e');
+      if (!context.mounted) return null;
       ToastServices.sendScaffoldAlert(
         msg: 'Failed to pick image',
         toastStatus: 'ERROR',
@@ -65,6 +67,7 @@ class ImageServices {
       return imageUrl;
     } catch (e, st) {
       log('Upload error: $e\n$st');
+      if (!context.mounted) return null; 
       ToastServices.sendScaffoldAlert(
         msg: 'Failed to upload image',
         toastStatus: 'ERROR',

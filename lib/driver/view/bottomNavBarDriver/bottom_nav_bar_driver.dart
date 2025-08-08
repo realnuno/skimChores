@@ -12,7 +12,7 @@ import 'package:new_uber/common/model/profile_data_model.dart';
 import 'package:new_uber/constant/constants.dart';
 import 'package:new_uber/constant/utils/colors.dart';
 import 'package:new_uber/driver/controller/services/bottom_nav_bar_driver_provider.dart';
-import 'package:new_uber/driver/view/accountScreenDriver/account_screen_rider.dart';
+import 'package:new_uber/driver/view/accountScreenDriver/account_screen_driver.dart';
 import 'package:new_uber/driver/view/activityScreenDriver/activity_screen.dart';
 import 'package:new_uber/driver/view/homeScreenDriver/home_screen_builder.dart';
 

@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:new_uber/common/controller/provider/auth_provider.dart';
 import 'package:new_uber/common/controller/provider/profile_data_provider.dart';
 import 'package:new_uber/common/controller/services/profile_data_crud_services.dart';
-import 'package:new_uber/common/model/profile_data_model.dart';
 import 'package:new_uber/common/view/authScreens/login_screen.dart';
 import 'package:new_uber/common/view/authScreens/otp_screen.dart';
 import 'package:new_uber/common/view/registrationScreen/registration_screen.dart';
@@ -17,8 +16,10 @@ import 'package:new_uber/driver/view/bottomNavBarDriver/bottom_nav_bar_driver.da
 import 'package:new_uber/rider/view/bottomNavBar/bottom_nav_bar_rider.dart';
 
 class MobileAuthServices {
-  static receiveOTP(
-      {required BuildContext context, required String mobileNumber}) async {
+  static receiveOTP({
+    required BuildContext context,
+    required String mobileNumber,
+  }) async {
     try {
       await auth.verifyPhoneNumber(
         phoneNumber: mobileNumber,
@@ -29,9 +30,9 @@ class MobileAuthServices {
           log(exception.toString());
         },
         codeSent: (String verificationCode, int? resendToken) {
-          context
-              .read<MobileAuthProvider>()
-              .updateVerificationCode(verificationCode);
+          context.read<MobileAuthProvider>().updateVerificationCode(
+            verificationCode,
+          );
           Navigator.push(
             context,
             PageTransition(
@@ -50,8 +51,9 @@ class MobileAuthServices {
   static verifyOTP({required BuildContext context, required String otp}) async {
     try {
       AuthCredential credential = PhoneAuthProvider.credential(
-          verificationId: context.read<MobileAuthProvider>().verificationCode!,
-          smsCode: otp);
+        verificationId: context.read<MobileAuthProvider>().verificationCode!,
+        smsCode: otp,
+      );
       await auth.signInWithCredential(credential);
       Navigator.push(
         context,
@@ -73,7 +75,9 @@ class MobileAuthServices {
     return false;
   }
 
-  static Future<void> checkAuthenticationAndNavigate({required BuildContext context}) async {
+  static Future<void> checkAuthenticationAndNavigate({
+    required BuildContext context,
+  }) async {
     bool userIsAuthenticated = checkAuthentication();
     if (userIsAuthenticated) {
       await checkUser(context); // also mark checkUser as async
@@ -89,44 +93,68 @@ class MobileAuthServices {
     }
   }
 
-
   static Future<void> checkUser(BuildContext context) async {
+    final user = auth.currentUser;
+    final phoneNumber = user?.phoneNumber;
+
+    if (user == null || phoneNumber == null) {
+      // Handle the error: user is not signed in or phone number is missing
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageTransition(
+          child: const LoginScreen(),
+          type: PageTransitionType.rightToLeft,
+        ),
+        (route) => false,
+      );
+      return;
+    }
+
     bool userIsRegistered =
         await ProfileDataCRUDServices.checkForRegisteredUser(context);
 
     if (userIsRegistered == true) {
-      ProfileDataModel profileData =
-          await ProfileDataCRUDServices.getProfileDataFromRealTimeDatabase(
-              auth.currentUser!.phoneNumber!);
+      // ProfileDataModel profileData =
+      //     await ProfileDataCRUDServices.getProfileDataFromRealTimeDatabase(
+      //       phoneNumber,
+      //     );
       // PushNotificationServices.initializeFirebaseMessagingForUsers(
-      //     profileData, context);
+      //   profileData,
+      //   context,
+      // );
       bool userIsDriver = await ProfileDataCRUDServices.userIsDriver(context);
       if (userIsDriver == true) {
         // Navigate to Driver Application
         context.read<ProfileDataProvider>().getProfileData();
         Navigator.pushAndRemoveUntil(
-            context,
-            PageTransition(
-                child: const BottomNavBarDriver(),
-                type: PageTransitionType.rightToLeft),
-            (route) => false);
+          context,
+          PageTransition(
+            child: const BottomNavBarDriver(),
+            type: PageTransitionType.rightToLeft,
+          ),
+          (route) => false,
+        );
       } else {
         // Navigate to Rider Application
         context.read<ProfileDataProvider>().getProfileData();
         Navigator.pushAndRemoveUntil(
-            context,
-            PageTransition(
-                child: const BottomNavBarRider(),
-                type: PageTransitionType.rightToLeft),
-            (route) => false);
+          context,
+          PageTransition(
+            child: const BottomNavBarRider(),
+            type: PageTransitionType.rightToLeft,
+          ),
+          (route) => false,
+        );
       }
     } else {
       Navigator.pushAndRemoveUntil(
-          context,
-          PageTransition(
-              child: const RegistrationScreen(),
-              type: PageTransitionType.rightToLeft),
-          (route) => false);
+        context,
+        PageTransition(
+          child: const RegistrationScreen(),
+          type: PageTransitionType.rightToLeft,
+        ),
+        (route) => false,
+      );
     }
   }
 

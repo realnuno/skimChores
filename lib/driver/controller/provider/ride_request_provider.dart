@@ -12,7 +12,7 @@ import 'package:new_uber/constant/utils/colors.dart';
 
 class RideRequestProviderDriver extends ChangeNotifier {
   CameraPosition initialCameraPosition = const CameraPosition(
-    target: LatLng(38.8462, -77.3064),
+    target: LatLng(37.422, 122.08),
     zoom: 14,
   );
   Set<Marker> driverMarker = <Marker>{};

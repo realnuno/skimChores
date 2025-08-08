@@ -28,6 +28,7 @@ class GeoFireServices {
   }
 
   static goOffline(BuildContext context) {
+    Geofire.initialize("OnlineDrivers");
     Geofire.removeLocation(auth.currentUser!.phoneNumber!);
     databaseRef.set('OFFLINE');
     databaseRef.onDisconnect();

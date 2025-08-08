@@ -45,6 +45,7 @@ class LocationServices {
           .timeout(
             const Duration(seconds: 60),
             onTimeout: () {
+              if (!context.mounted) return Future.error(TimeoutException('Connection Timed Out'));
               ToastServices.sendScaffoldAlert(
                 msg: 'Opps! Connection Timed Out',
                 toastStatus: 'ERROR',
@@ -83,6 +84,7 @@ class LocationServices {
           .timeout(
             const Duration(seconds: 60),
             onTimeout: () {
+              if (!context.mounted) throw TimeoutException('Connection Timed Out');
               ToastServices.sendScaffoldAlert(
                 msg: 'Opps! Connection Timed Out',
                 toastStatus: 'ERROR',
@@ -123,6 +125,7 @@ class LocationServices {
           .timeout(
             const Duration(seconds: 60),
             onTimeout: () {
+              if (!context.mounted) throw TimeoutException('Connection Timed Out');
               ToastServices.sendScaffoldAlert(
                 msg: 'Opps! Connection Timed Out',
                 toastStatus: 'ERROR',

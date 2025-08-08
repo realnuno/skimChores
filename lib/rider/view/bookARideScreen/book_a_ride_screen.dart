@@ -36,6 +36,7 @@ class _BookARideScreenState extends State<BookARideScreen> {
   int selectedCarType = 0;
   bool bookRideButtonPressed = false;
   int time = 0;
+  bool _initialStreamLoadDone = false;
 
   updateTime() async {
     await Future.delayed(const Duration(seconds: 1), () {
@@ -224,8 +225,7 @@ class _BookARideScreenState extends State<BookARideScreen> {
                 return StreamBuilder(
                   stream: riderRideRequestRef.onValue,
                   builder: (context, event) {
-                    if ((event.connectionState == ConnectionState.waiting) ||
-                        (event.data == null)) {
+                    if (!_initialStreamLoadDone && event.connectionState == ConnectionState.waiting) {
                       return ListView(
                         shrinkWrap: true,
                         controller: controller,
@@ -236,19 +236,34 @@ class _BookARideScreenState extends State<BookARideScreen> {
                         ],
                       );
                     }
-                    if (event.data != null) {
-                      RideRequestModel rideData = RideRequestModel.fromMap(
-                        jsonDecode(jsonEncode(event.data!.snapshot.value))
-                            as Map<String, dynamic>,
-                      );
+                    _initialStreamLoadDone = true; // Mark that we've loaded at least once
 
-                      if (rideData.driverProfile == null) {
-                        return searchingForRide();
-                        // return CancelRideRequest(
-                        //   controller: controller,
-                        // );
-                      } else {
-                        if (rideData.driverProfile != null) {
+                    if (event.data == null || event.data!.snapshot.value == null) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        context.read<RideRequestProvider>().updatePlacedRideRequestStatus(false);
+                        if (bookRideButtonPressed) {
+                          setState(() {
+                            bookRideButtonPressed = false;
+                            time = 0;
+                          });
+                        }
+                      });
+                      return CancelRideRequest(controller: controller);
+                    }
+                    final value = event.data!.snapshot.value;
+                    if (value == null) {
+                      // Already handled above, but double safety
+                      return CancelRideRequest(controller: controller);
+                    }
+                    RideRequestModel rideData = RideRequestModel.fromMap(
+                      jsonDecode(jsonEncode(value)) as Map<String, dynamic>,
+                    );
+
+                    if (rideData.driverProfile == null) {
+                      return searchingForRide();
+                    } else {
+                      if (rideData.driverProfile != null) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
                           if (rideRequestProvider.updateMarkerBool == false) {
                             rideRequestProvider.updateUpdateMarkerBool(true);
                             rideRequestProvider.updateMarker();
@@ -256,15 +271,13 @@ class _BookARideScreenState extends State<BookARideScreen> {
                           if (rideRequestProvider.fetchNearbyDrivers == true) {
                             rideRequestProvider.updateFetchNearbyDrivers(false);
                           }
-                        }
-                        return RideData(
-                          rideData: rideData,
-                          controller: controller,
-                        );
-                        // return searchingForRide();
+                        });
                       }
+                      return RideData(
+                        rideData: rideData,
+                        controller: controller,
+                      );
                     }
-                    return CancelRideRequest(controller: controller);
                   },
                 );
               }
@@ -440,35 +453,39 @@ class _BookARideScreenState extends State<BookARideScreen> {
                     SizedBox(height: 1.h),
                     ElevatedButtonCommon(
                       onPressed: () {
-                        context
-                            .read<RideRequestProvider>()
-                            .updatePlacedRideRequestStatus(true);
+                        final profileData = context.read<ProfileDataProvider>().profileData;
+                        final pickupLocation = context.read<RideRequestProvider>().pickupLocation;
+                        final dropLocation = context.read<RideRequestProvider>().dropLocation;
+
+                        if (profileData == null || pickupLocation == null || dropLocation == null) {
+                          // Show error to user
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Missing profile or location data. Please try again.')),
+                          );
+                          return;
+                        }
+
+                        context.read<RideRequestProvider>().updatePlacedRideRequestStatus(true);
                         setState(() {
                           bookRideButtonPressed = true;
                         });
-                        RideRequestModel model = RideRequestModel(
+
+                        final model = RideRequestModel(
                           rideCreatTime: DateTime.now(),
-                          riderProfile: context
-                              .read<ProfileDataProvider>()
-                              .profileData!,
-                          pickupLocation: context
-                              .read<RideRequestProvider>()
-                              .pickupLocation!,
-                          dropLocation: context
-                              .read<RideRequestProvider>()
-                              .dropLocation!,
+                          riderProfile: profileData,
+                          pickupLocation: pickupLocation,
+                          dropLocation: dropLocation,
                           fare: getFare(selectedCarType).toString(),
                           carType: getCarType(selectedCarType),
                           rideStatus: RideRequestServices.getRideStatus(0),
                           otp: math.Random().nextInt(9999).toString(),
                         );
+
                         RideRequestServices.createNewRideRequest(
                           model,
                           context,
                         );
-                        context
-                            .read<RideRequestProvider>()
-                            .sendPushNotificationToNearbyDrivers();
+                        context.read<RideRequestProvider>().sendPushNotificationToNearbyDrivers();
                         updateTime();
                       },
                       backgroundColor: black,
@@ -702,7 +719,7 @@ class CancelRideRequest extends StatelessWidget {
               border: Border.all(color: black38, width: 2),
               color: white,
             ),
-            child: Icon(CupertinoIcons.xmark, color: black, size: 6.h),
+            child: Icon(CupertinoIcons.xmark, color: red, size: 6.h),
           ),
         ),
         SizedBox(height: 2.h),

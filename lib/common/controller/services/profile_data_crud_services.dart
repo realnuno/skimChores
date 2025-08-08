@@ -14,7 +14,8 @@ class ProfileDataCRUDServices {
       final snapshot = await realTimeDatabaseRef.child('User/$userID').get();
       if (snapshot.exists) {
         ProfileDataModel userModel = ProfileDataModel.fromMap(
-            jsonDecode(jsonEncode(snapshot.value)) as Map<String, dynamic>);
+          jsonDecode(jsonEncode(snapshot.value)) as Map<String, dynamic>,
+        );
         return userModel;
       }
     } catch (e) {
@@ -38,31 +39,37 @@ class ProfileDataCRUDServices {
     }
   }
 
-  static registerUserToDatabase(
-      {required ProfileDataModel profileData, required BuildContext context}) {
+  static registerUserToDatabase({
+    required ProfileDataModel profileData,
+    required BuildContext context,
+  }) {
     realTimeDatabaseRef
         .child('User/${auth.currentUser!.phoneNumber}')
         .set(profileData.toMap())
         .then((value) {
-      ToastServices.sendScaffoldAlert(
-        msg: 'User Registered Successful',
-        toastStatus: 'SUCCESS',
-        context: context,
-      );
-      Navigator.pushAndRemoveUntil(
-          context,
-          PageTransition(
-            child: const SignInLogic(),
-            type: PageTransitionType.rightToLeft,
-          ),
-          (route) => false);
-    }).onError((error, stackTrace) {
-      ToastServices.sendScaffoldAlert(
-        msg: 'Opps! Error getting Registered',
-        toastStatus: 'SUCCESS',
-        context: context,
-      );
-    });
+          if (!context.mounted) return null;
+          ToastServices.sendScaffoldAlert(
+            msg: 'User Registered Successful',
+            toastStatus: 'SUCCESS',
+            context: context,
+          );
+          Navigator.pushAndRemoveUntil(
+            context,
+            PageTransition(
+              child: const SignInLogic(),
+              type: PageTransitionType.rightToLeft,
+            ),
+            (route) => false,
+          );
+        })
+        .onError((error, stackTrace) {
+          if (!context.mounted) return null;
+          ToastServices.sendScaffoldAlert(
+            msg: 'Opps! Error getting Registered',
+            toastStatus: 'SUCCESS',
+            context: context,
+          );
+        });
   }
 
   static Future<bool> userIsDriver(BuildContext context) async {
@@ -73,7 +80,8 @@ class ProfileDataCRUDServices {
 
       if (snapshot.exists) {
         ProfileDataModel userModel = ProfileDataModel.fromMap(
-            jsonDecode(jsonEncode(snapshot.value)) as Map<String, dynamic>);
+          jsonDecode(jsonEncode(snapshot.value)) as Map<String, dynamic>,
+        );
 
         log('User Type is ${userModel.userType}');
         if (userModel.userType != 'CUSTOMER') {

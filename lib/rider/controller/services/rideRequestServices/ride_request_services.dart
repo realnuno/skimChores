@@ -7,24 +7,36 @@ import 'package:new_uber/common/model/ride_request_model.dart';
 import 'package:new_uber/constant/constants.dart';
 
 class RideRequestServices {
-  static createNewRideRequest(
-      RideRequestModel rideRequestModel, BuildContext context) async {
-    DatabaseReference ref = FirebaseDatabase.instance
-        .ref()
-        .child('RideRequest/${auth.currentUser!.phoneNumber}');
-    await ref.set(rideRequestModel.toMap()).then((value) {
+  static Future<void> createNewRideRequest(
+    RideRequestModel rideRequestModel,
+    BuildContext context,
+  ) async {
+    if (!context.mounted) return;
+
+    try {
+      final ref = FirebaseDatabase.instance.ref().child(
+        'RideRequest/${auth.currentUser!.phoneNumber}',
+      );
+
+      await ref.set(rideRequestModel.toMap());
+
+      if (!context.mounted) return;
+
       ToastServices.sendScaffoldAlert(
-        msg: 'Ride Request Registered Successful',
+        msg: 'Ride Request Registered Successfully',
         toastStatus: 'SUCCESS',
         context: context,
       );
-    }).onError((error, stackTrace) {
+    } catch (error) {
+      if (!context.mounted) return;
+
       ToastServices.sendScaffoldAlert(
-        msg: 'Error Creating new Ride Request',
+        msg: 'Error Creating New Ride Request',
         toastStatus: 'ERROR',
         context: context,
       );
-    });
+      throw Exception(error);
+    }
   }
 
   static getRideStatus(int rideStatusNum) {
@@ -52,12 +64,14 @@ class RideRequestServices {
   }
 
   static getRideHistory(BuildContext context) async {
-    DatabaseReference ref = FirebaseDatabase.instance
-        .ref()
-        .child('RideHistoryRider/${auth.currentUser!.phoneNumber}');
+    DatabaseReference ref = FirebaseDatabase.instance.ref().child(
+      'RideHistoryRider/${auth.currentUser!.phoneNumber}',
+    );
     try {
-      DatabaseEvent event =
-          await ref.orderByChild('rideEndTime').limitToLast(2).once();
+      DatabaseEvent event = await ref
+          .orderByChild('rideEndTime')
+          .limitToLast(2)
+          .once();
       log(event.snapshot.value.toString());
     } catch (e) {
       throw Exception(e);

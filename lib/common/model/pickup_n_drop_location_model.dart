@@ -30,8 +30,8 @@ class PickupNDropLocationModel {
       name: map['name'] != null ? map['name'] as String : null,
       description: map['description'] != null ? map['description'] as String : null,
       placeID: map['placeID'] != null ? map['placeID'] as String : null,
-      latitude: map['latitude'] != null ? map['latitude'] as double : null,
-      longitude: map['longitude'] != null ? map['longitude'] as double : null,
+      latitude: map['latitude'] != null ? (map['latitude'] as num).toDouble() : null,
+      longitude: map['longitude'] != null ? (map['longitude'] as num).toDouble() : null,
     );
   }
 

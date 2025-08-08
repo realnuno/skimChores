@@ -1,12 +1,14 @@
 plugins {
     id("com.android.application")
-    // START: FlutterFire Configuration
-    id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
     id("kotlin-android")
+    
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+
+    // Firebase (FlutterFire) plugin
+    id("com.google.gms.google-services")
 }
+
 
 android {
     namespace = "com.example.new_uber"
@@ -45,7 +47,9 @@ android {
 
 dependencies {
     implementation("com.google.android.gms:play-services-maps:18.1.0")
+    implementation("com.google.firebase:firebase-messaging:24.0.0")
 }
+
 
 flutter {
     source = "../.."

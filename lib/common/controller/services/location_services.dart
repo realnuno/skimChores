@@ -15,23 +15,49 @@ import 'package:new_uber/common/model/searched_address_model.dart';
 
 class LocationServices {
   static getCurrentLocation() async {
+    print('📍 getCurrentLocation called');
+    
     LocationPermission permission = await Geolocator.checkPermission();
+    print('🔐 Current permission status: $permission');
+    
     if (permission == LocationPermission.denied) {
+      print('⚠️ Permission denied, requesting permission...');
       permission = await Geolocator.requestPermission();
+      print('🔐 New permission status: $permission');
+      
       if (permission == LocationPermission.denied) {
-        getCurrentLocation();
+        print('❌ Permission still denied, returning null');
+        return null; // Return null instead of recursive call
       }
     }
-    Position currentPosition = await Geolocator.getCurrentPosition(
-      locationSettings: LocationSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
-      ),
-    );
-    LatLng currentLocation = LatLng(
-      currentPosition.latitude,
-      currentPosition.longitude,
-    );
-    return currentLocation;
+    
+    if (permission == LocationPermission.deniedForever) {
+      print('❌ Permission denied forever, returning null');
+      return null;
+    }
+    
+    print('✅ Permission granted, getting current position...');
+    
+    try {
+      Position currentPosition = await Geolocator.getCurrentPosition(
+        locationSettings: LocationSettings(
+          accuracy: LocationAccuracy.bestForNavigation,
+        ),
+      );
+      
+      print('📍 Position obtained: ${currentPosition.latitude}, ${currentPosition.longitude}');
+      
+      LatLng currentLocation = LatLng(
+        currentPosition.latitude,
+        currentPosition.longitude,
+      );
+      
+      print('✅ Returning location: ${currentLocation.latitude}, ${currentLocation.longitude}');
+      return currentLocation;
+    } catch (e) {
+      print('❌ Error getting position: $e');
+      return null;
+    }
   }
 
   static Future getAddressFromLatLng({
@@ -61,7 +87,7 @@ class LocationServices {
           name: decodedResponse['results'][0]['formatted_address'],
           placeID: decodedResponse['results'][0]['place_id'],
           latitude: position.latitude,
-          longitude: position.latitude,
+          longitude: position.longitude, // Fixed: was position.latitude
         );
         log(model.toMap().toString());
         context.read<LocationProvider>().updatePickupLocation(model);
@@ -117,9 +143,13 @@ class LocationServices {
     BuildContext context,
     String locationType,
   ) async {
+    print('🔍 getLatLngFromPlaceID called for: ${address.mainName} ($locationType)');
+    
     final api = Uri.parse(APIs.getLatLngFromPlaceIDAPI(address.placeID));
 
     try {
+      print('🌐 Making API request to: ${api.toString().substring(0, 100)}...');
+      
       var response = await http
           .get(api, headers: {'Content-Type': 'application/json'})
           .timeout(
@@ -134,10 +164,16 @@ class LocationServices {
               throw TimeoutException('Connection Timed Out');
             },
           );
+      
+      print('📡 Response status: ${response.statusCode}');
+      
       if (response.statusCode == 200) {
         var decodedResponse = jsonDecode(response.body);
+        print('📋 Response decoded successfully');
 
         var locationLatLng = decodedResponse['result']['geometry']['location'];
+        print('📍 Location data: $locationLatLng');
+        
         PickupNDropLocationModel model = PickupNDropLocationModel(
           name: address.mainName,
           description: address.secondaryName,
@@ -146,13 +182,22 @@ class LocationServices {
           longitude: locationLatLng['lng'],
         );
 
+        print('✅ Created location model: ${model.toMap()}');
+
         if (locationType == 'DROP') {
+          print('📍 Updating drop location');
           context.read<LocationProvider>().updateDropLocation(model);
         } else {
+          print('📍 Updating pickup location');
           context.read<LocationProvider>().updatePickupLocation(model);
         }
+        
+        print('✅ Location updated successfully');
+      } else {
+        print('❌ API request failed with status: ${response.statusCode}');
       }
     } catch (e) {
+      print('❌ Error in getLatLngFromPlaceID: $e');
       throw Exception(e);
     }
   }

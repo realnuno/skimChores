@@ -210,13 +210,15 @@ class RideRequestProvider extends ChangeNotifier {
       }
     }
     if (updateMarkerBool == true) {
-      LatLng crrLocation = await LocationServices.getCurrentLocation();
-      Marker carMarker = Marker(
-        markerId: MarkerId(auth.currentUser!.phoneNumber!),
-        position: LatLng(crrLocation.latitude, crrLocation.longitude),
-        icon: carIconForMap!,
-      );
-      riderMarker.add(carMarker);
+      LatLng? crrLocation = await LocationServices.getCurrentLocation();
+      if (crrLocation != null) {
+        Marker carMarker = Marker(
+          markerId: MarkerId(auth.currentUser!.phoneNumber!),
+          position: LatLng(crrLocation.latitude, crrLocation.longitude),
+          icon: carIconForMap!,
+        );
+        riderMarker.add(carMarker);
+      }
     }
     riderMarker.add(pickupMarker);
     riderMarker.add(destinationMarker);

@@ -149,8 +149,21 @@ class PushNotificationDialouge {
                       context
                           .read<RideRequestProviderDriver>()
                           .createIcons(context);
-                      LatLng crrDriverLocation =
+                      LatLng? crrDriverLocation =
                           await LocationServices.getCurrentLocation();
+                      if (crrDriverLocation == null) {
+                        // Handle case where location permission is denied
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Location permission denied. Please enable location services.'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                        return;
+                      }
+                      
                       context
                           .read<RideRequestProviderDriver>()
                           .updateRideAcceptLocation(crrDriverLocation);

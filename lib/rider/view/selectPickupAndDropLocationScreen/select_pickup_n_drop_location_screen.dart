@@ -32,9 +32,23 @@ class _PickupAndDropLocationScreenState
   FocusNode dropLocationFocus = FocusNode();
   FocusNode pickupLocationFocus = FocusNode();
   String locationType = 'DROP';
+  bool isNavigating = false; // Add this to prevent multiple navigation calls
 
   getCurrentAddress() async {
-    LatLng crrLocation = await LocationServices.getCurrentLocation();
+    LatLng? crrLocation = await LocationServices.getCurrentLocation();
+    if (crrLocation == null) {
+      // Handle case where location permission is denied
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location permission denied. Please enable location services.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+    
     PickupNDropLocationModel currentLocationAddress =
         await LocationServices.getAddressFromLatLng(
           position: crrLocation,
@@ -54,48 +68,103 @@ class _PickupAndDropLocationScreenState
   }
 
   navigateToBookRideScreen() async {
-    if (context.read<LocationProvider>().pickupLocation != null &&
-        context.read<LocationProvider>().dropLocation != null) {
-      PickupNDropLocationModel pickup = context
-          .read<LocationProvider>()
-          .pickupLocation!;
-      PickupNDropLocationModel drop = context
-          .read<LocationProvider>()
-          .dropLocation!;
-      context.read<RideRequestProvider>().updateRidePickupAndDropLocation(
-        pickup,
-        drop,
-      );
-      PickupNDropLocationModel pickupModel = context
-          .read<LocationProvider>()
-          .pickupLocation!;
-      PickupNDropLocationModel dropModel = context
-          .read<LocationProvider>()
-          .dropLocation!;
-      LatLng pickupLocation = LatLng(
-        pickupModel.latitude!,
-        pickupModel.longitude!,
-      );
-      LatLng dropLocation = LatLng(dropModel.latitude!, dropModel.longitude!);
-      await DirectionServices.getDirectionDetailsRider(
-        pickupLocation,
-        dropLocation,
-        context,
-      );
-      context.read<RideRequestProvider>().makeFareZero();
-      context.read<RideRequestProvider>().createIcons(context);
-      context.read<RideRequestProvider>().updateMarker();
-      context.read<RideRequestProvider>().getFare();
-      context
-          .read<RideRequestProvider>()
-          .decodePolylineAndUpdatePolylineField();
-      Navigator.push(
-        context,
-        PageTransition(
-          child: const BookARideScreen(),
-          type: PageTransitionType.rightToLeft,
-        ),
-      );
+    print('🚀 navigateToBookRideScreen called');
+    
+    // Prevent multiple simultaneous calls
+    if (isNavigating) {
+      print('⚠️ Navigation already in progress, returning early');
+      return;
+    }
+    isNavigating = true;
+    
+    try {
+      print('📍 Checking location data...');
+      if (context.read<LocationProvider>().pickupLocation != null &&
+          context.read<LocationProvider>().dropLocation != null) {
+        
+        // Additional validation to ensure coordinates are valid
+        final pickup = context.read<LocationProvider>().pickupLocation!;
+        final drop = context.read<LocationProvider>().dropLocation!;
+        
+        print('📍 Pickup: ${pickup.latitude}, ${pickup.longitude}');
+        print('📍 Drop: ${drop.latitude}, ${drop.longitude}');
+        
+        if (pickup.latitude == null || pickup.longitude == null ||
+            drop.latitude == null || drop.longitude == null) {
+          print('❌ Invalid location data detected');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Invalid location data. Please try selecting locations again.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+        
+        print('✅ Location data valid, proceeding with navigation...');
+        
+        context.read<RideRequestProvider>().updateRidePickupAndDropLocation(
+          pickup,
+          drop,
+        );
+        
+        LatLng pickupLocation = LatLng(
+          pickup.latitude!,
+          pickup.longitude!,
+        );
+        LatLng dropLocation = LatLng(drop.latitude!, drop.longitude!);
+        
+        print('🗺️ Getting directions...');
+        await DirectionServices.getDirectionDetailsRider(
+          pickupLocation,
+          dropLocation,
+          context,
+        );
+        
+        print('💰 Calculating fare...');
+        context.read<RideRequestProvider>().makeFareZero();
+        context.read<RideRequestProvider>().createIcons(context);
+        context.read<RideRequestProvider>().updateMarker();
+        context.read<RideRequestProvider>().getFare();
+        context
+            .read<RideRequestProvider>()
+            .decodePolylineAndUpdatePolylineField();
+        
+        print('🚀 Navigating to BookARideScreen...');
+        Navigator.push(
+          context,
+          PageTransition(
+            child: const BookARideScreen(),
+            type: PageTransitionType.rightToLeft,
+          ),
+        );
+        print('✅ Navigation completed successfully');
+      } else {
+        print('❌ Missing location data');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please select both pickup and drop locations.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('❌ Error during navigation: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      isNavigating = false;
+      print('🔄 Navigation flag reset');
     }
   }
 

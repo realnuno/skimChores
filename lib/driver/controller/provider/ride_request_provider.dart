@@ -24,6 +24,7 @@ class RideRequestProviderDriver extends ChangeNotifier {
   BitmapDescriptor? destinationIconForMap;
   BitmapDescriptor? pickupIconForMap;
   bool updateMarkerBool = false;
+  bool isUpdatingMarker = false; // Add this to prevent recursive calls
   PickupNDropLocationModel? dropLocation;
   PickupNDropLocationModel? pickupLocation;
   RideRequestModel? rideRequestData;
@@ -112,40 +113,54 @@ class RideRequestProviderDriver extends ChangeNotifier {
   }
 
   updateMarker() async {
-    driverMarker = <Marker>{};
-    log('Driver Marker Is Empty');
-    log(driverMarker.isEmpty.toString());
-    Marker pickupMarker = Marker(
-      markerId: const MarkerId('PickupMarker'),
-      position: movingFromCurrentLocationTopickupLocation
-          ? rideAcceptLocation!
-          : LatLng(pickupLocation!.latitude!, pickupLocation!.longitude!),
-      icon: pickupIconForMap!,
-    );
-    Marker destinationMarker = Marker(
-      markerId: const MarkerId('PickupMarker'),
-      position: movingFromCurrentLocationTopickupLocation
-          ? LatLng(pickupLocation!.latitude!, pickupLocation!.longitude!)
-          : LatLng(dropLocation!.latitude!, dropLocation!.longitude!),
-      icon: destinationIconForMap!,
-    );
-
-    if (updateMarkerBool == true) {
-      LatLng crrLocation = await LocationServices.getCurrentLocation();
-      Marker carMarker = Marker(
-        markerId: MarkerId(auth.currentUser!.phoneNumber!),
-        position: LatLng(crrLocation.latitude, crrLocation.longitude),
-        icon: carIconForMap!,
+    // Prevent recursive calls
+    if (isUpdatingMarker) return;
+    isUpdatingMarker = true;
+    
+    try {
+      driverMarker = <Marker>{};
+      log('Driver Marker Is Empty');
+      log(driverMarker.isEmpty.toString());
+      Marker pickupMarker = Marker(
+        markerId: const MarkerId('PickupMarker'),
+        position: movingFromCurrentLocationTopickupLocation
+            ? rideAcceptLocation!
+            : LatLng(pickupLocation!.latitude!, pickupLocation!.longitude!),
+        icon: pickupIconForMap!,
       );
-      driverMarker.add(carMarker);
-    }
-    driverMarker.add(pickupMarker);
-    driverMarker.add(destinationMarker);
-    notifyListeners();
-    if (updateMarkerBool == true) {
-      await Future.delayed(const Duration(seconds: 5), () async {
-        await updateMarker();
-      });
+      Marker destinationMarker = Marker(
+        markerId: const MarkerId('PickupMarker'),
+        position: movingFromCurrentLocationTopickupLocation
+            ? LatLng(pickupLocation!.latitude!, pickupLocation!.longitude!)
+            : LatLng(dropLocation!.latitude!, dropLocation!.longitude!),
+        icon: destinationIconForMap!,
+      );
+
+      if (updateMarkerBool == true) {
+        LatLng? crrLocation = await LocationServices.getCurrentLocation();
+        if (crrLocation != null) {
+          Marker carMarker = Marker(
+            markerId: MarkerId(auth.currentUser!.phoneNumber!),
+            position: LatLng(crrLocation.latitude, crrLocation.longitude),
+            icon: carIconForMap!,
+          );
+          driverMarker.add(carMarker);
+        }
+      }
+      driverMarker.add(pickupMarker);
+      driverMarker.add(destinationMarker);
+      notifyListeners();
+      
+      // Only schedule next update if still needed and not already updating
+      if (updateMarkerBool == true) {
+        await Future.delayed(const Duration(seconds: 5), () async {
+          if (updateMarkerBool == true) {
+            await updateMarker();
+          }
+        });
+      }
+    } finally {
+      isUpdatingMarker = false;
     }
   }
 

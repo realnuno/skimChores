@@ -114,8 +114,21 @@ class _BookARideScreenState extends State<TripScreen> {
                                         .read<RideRequestProviderDriver>()
                                         .rideRequestData!
                                         .otp) {
-                                  LatLng pickupLocation = await LocationServices
+                                  LatLng? pickupLocation = await LocationServices
                                       .getCurrentLocation();
+                                  if (pickupLocation == null) {
+                                    // Handle case where location permission is denied
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Location permission denied. Please enable location services.'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                    return;
+                                  }
+                                  
                                   LatLng dropLocation = LatLng(
                                       context
                                           .read<RideRequestProviderDriver>()

@@ -16,7 +16,12 @@ class GeoFireServices {
   );
 
   static goOnline() async {
-    LatLng currentPosition = await LocationServices.getCurrentLocation();
+    LatLng? currentPosition = await LocationServices.getCurrentLocation();
+    if (currentPosition == null) {
+      // Handle case where location permission is denied
+      return;
+    }
+    
     Geofire.initialize('OnlineDrivers');
     Geofire.setLocation(
       auth.currentUser!.phoneNumber!,

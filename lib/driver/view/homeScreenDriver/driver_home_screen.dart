@@ -156,14 +156,16 @@ class _HomeScreenDriverState extends State<HomeScreenDriver> {
                   onMapCreated: (GoogleMapController controller) async {
                     mapControllerDriver.complete(controller);
                     mapController = controller;
-                    LatLng crrLocation =
+                    LatLng? crrLocation =
                         await LocationServices.getCurrentLocation();
-                    CameraPosition cameraPosition = CameraPosition(
-                      target: crrLocation,
-                      zoom: 14,
-                    );
-                    mapController!.animateCamera(
-                        CameraUpdate.newCameraPosition(cameraPosition));
+                    if (crrLocation != null) {
+                      CameraPosition cameraPosition = CameraPosition(
+                        target: crrLocation,
+                        zoom: 14,
+                      );
+                      mapController!.animateCamera(
+                          CameraUpdate.newCameraPosition(cameraPosition));
+                    }
                   },
                 );
               })

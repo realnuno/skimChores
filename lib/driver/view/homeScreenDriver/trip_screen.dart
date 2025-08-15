@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swipe_button/flutter_swipe_button.dart';
@@ -230,16 +231,45 @@ class _BookARideScreenState extends State<TripScreen> {
                   mapControllerDriver.complete(controller);
                   mapController = controller;
 
-                  LatLng pickupLocation = LatLng(
-                    rideRequestProvider.rideAcceptLocation!.latitude,
-                    rideRequestProvider.rideAcceptLocation!.longitude,
-                  );
-                  CameraPosition cameraPosition = CameraPosition(
-                    target: pickupLocation,
-                    zoom: 14,
-                  );
-                  mapController!.animateCamera(
-                      CameraUpdate.newCameraPosition(cameraPosition));
+                  // Check if rideAcceptLocation is available, otherwise use current location
+                  LatLng? targetLocation;
+                  if (rideRequestProvider.rideAcceptLocation != null) {
+                    targetLocation = LatLng(
+                      rideRequestProvider.rideAcceptLocation!.latitude,
+                      rideRequestProvider.rideAcceptLocation!.longitude,
+                    );
+                  } else {
+                    // Fallback to current location if rideAcceptLocation is not set
+                    targetLocation = await LocationServices.getCurrentLocation();
+                    targetLocation ??= const LatLng(0, 0);
+                  }
+
+                  // Add delay to ensure map is fully ready before animating camera
+                  await Future.delayed(const Duration(milliseconds: 500));
+                  
+                  // Check if context is still mounted and controller is valid
+                  if (!mounted || mapController == null) return;
+                  
+                  try {
+                    CameraPosition cameraPosition = CameraPosition(
+                      target: targetLocation,
+                      zoom: 14,
+                    );
+                    await mapController!.animateCamera(
+                        CameraUpdate.newCameraPosition(cameraPosition));
+                  } catch (e) {
+                    log('Camera animation error: $e');
+                    // Fallback to setCameraPosition if animateCamera fails
+                    try {
+                      mapController!.moveCamera(
+                          CameraUpdate.newCameraPosition(CameraPosition(
+                        target: targetLocation,
+                        zoom: 14,
+                      )));
+                    } catch (e2) {
+                      log('Fallback camera move also failed: $e2');
+                    }
+                  }
                 },
               ),
               Positioned(

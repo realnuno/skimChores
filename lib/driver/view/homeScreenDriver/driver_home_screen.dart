@@ -15,6 +15,7 @@ import 'package:new_uber/constant/utils/colors.dart';
 import 'package:new_uber/constant/utils/textStyles.dart';
 import 'package:new_uber/driver/controller/services/geofire_services.dart';
 import 'package:new_uber/driver/controller/services/maps_provider_driver.dart';
+import 'package:new_uber/driver/controller/services/rideRequestServices/ride_request_services.dart';
 
 class HomeScreenDriver extends StatefulWidget {
   const HomeScreenDriver({super.key});
@@ -29,148 +30,171 @@ class _HomeScreenDriverState extends State<HomeScreenDriver> {
   DatabaseReference driverProfileRef = FirebaseDatabase.instance
       .ref()
       .child('User/${auth.currentUser!.phoneNumber}');
+      
+  // Add flag to prevent multiple executions
+  bool _isProcessingSwipe = false;
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-          appBar: PreferredSize(
-            preferredSize: Size(100.w, 10.h),
-            child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 3.w,
-                  vertical: 1.h,
-                ),
-                child: StreamBuilder(
-                  stream: driverProfileRef.onValue,
-                  builder: (context, event) {
-                    if (event.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: black,
-                        ),
-                      );
-                    }
-                    log(event.data.toString());
-                    if (event.data == null) {
-                      return SwipeButton(
-                        thumbPadding: EdgeInsets.all(1.w),
-                        thumb: Icon(
-                          Icons.chevron_right,
-                          color: white,
-                        ),
-                        inactiveThumbColor: black,
-                        activeThumbColor: black,
-                        inactiveTrackColor: greyShade3,
-                        activeTrackColor: greyShade3,
-                        elevationThumb: 2,
-                        elevationTrack: 2,
-                        onSwipe: () {
-                          log('Button is Swiped');
-                          GeoFireServices.goOnline();
-                          GeoFireServices.updateLocationRealTime(context);
-                        },
-                        child: Builder(builder: (context) {
-                          return Text(
-                            'Go Online',
-                            style: AppTextStyles.body16Bold,
-                          );
-                        }),
-                      );
-                    }
-                    if (event.data != null) {
-                      ProfileDataModel profileData = ProfileDataModel.fromMap(
-                          jsonDecode(jsonEncode(event.data!.snapshot.value))
-                              as Map<String, dynamic>);
-                      log(profileData.driverStatus.toString());
-                      log(profileData.toMap().toString());
-                      if (profileData.driverStatus == 'ONLINE') {
-                        return SwipeButton(
-                          thumbPadding: EdgeInsets.all(1.w),
-                          thumb: Icon(
-                            Icons.chevron_right,
-                            color: white,
+        appBar: PreferredSize(
+          preferredSize: Size(100.w, 10.h),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: 3.w,
+              vertical: 1.h,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: StreamBuilder(
+                    stream: driverProfileRef.onValue,
+                    builder: (context, event) {
+                      if (event.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: black,
                           ),
-                          inactiveThumbColor: black,
-                          activeThumbColor: black,
-                          inactiveTrackColor: greyShade3,
-                          activeTrackColor: greyShade3,
-                          elevationThumb: 2,
-                          elevationTrack: 2,
-                          onSwipe: () {
-                            log('Button is Swiped');
-                            GeoFireServices.goOffline(context);
-                          },
-                          child: Builder(builder: (context) {
-                            return Text(
-                              'Go Offline',
-                              style: AppTextStyles.body16Bold,
-                            );
-                          }),
-                        );
-                      } else {
-                        return SwipeButton(
-                          thumbPadding: EdgeInsets.all(1.w),
-                          thumb: Icon(
-                            Icons.chevron_right,
-                            color: white,
-                          ),
-                          inactiveThumbColor: black,
-                          activeThumbColor: black,
-                          inactiveTrackColor: greyShade3,
-                          activeTrackColor: greyShade3,
-                          elevationThumb: 2,
-                          elevationTrack: 2,
-                          onSwipe: () {
-                            log('Button is Swiped');
-                            GeoFireServices.goOnline();
-                            GeoFireServices.updateLocationRealTime(context);
-                          },
-                          child: Builder(builder: (context) {
-                            return Text(
-                              'Go Online',
-                              style: AppTextStyles.body16Bold,
-                            );
-                          }),
                         );
                       }
-                    }
-                    return Center(
-                      child: CircularProgressIndicator(
-                        color: black,
-                      ),
-                    );
-                  },
-                )),
+                      
+                      if (event.data == null) {
+                        return _buildSwipeButton(
+                          text: 'Go Online',
+                          onSwipe: _handleGoOnline,
+                        );
+                      }
+                      
+                      try {
+                        ProfileDataModel profileData = ProfileDataModel.fromMap(
+                            jsonDecode(jsonEncode(event.data!.snapshot.value))
+                                as Map<String, dynamic>);
+                        
+                        log(profileData.driverStatus.toString());
+                        
+                        if (profileData.driverStatus == 'ONLINE') {
+                          return _buildSwipeButton(
+                            text: 'Go Offline',
+                            onSwipe: _handleGoOffline,
+                          );
+                        } else {
+                          return _buildSwipeButton(
+                            text: 'Go Online',
+                            onSwipe: _handleGoOnline,
+                          );
+                        }
+                      } catch (e) {
+                        log('Error parsing profile data: $e');
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: black,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
-          body: Stack(
-            children: [
-              Consumer<MapsProviderDriver>(
-                  builder: (context, mapProvider, child) {
-                return GoogleMap(
-                  initialCameraPosition: mapProvider.initialCameraPosition,
-                  mapType: MapType.normal,
-                  myLocationButtonEnabled: true,
-                  myLocationEnabled: true,
-                  zoomControlsEnabled: true,
-                  zoomGesturesEnabled: true,
-                  onMapCreated: (GoogleMapController controller) async {
-                    mapControllerDriver.complete(controller);
-                    mapController = controller;
-                    LatLng? crrLocation =
-                        await LocationServices.getCurrentLocation();
-                    if (crrLocation != null) {
-                      CameraPosition cameraPosition = CameraPosition(
-                        target: crrLocation,
-                        zoom: 14,
-                      );
-                      mapController!.animateCamera(
-                          CameraUpdate.newCameraPosition(cameraPosition));
-                    }
-                  },
-                );
-              })
-            ],
-          )),
+        ),
+        body: Stack(
+          children: [
+            Consumer<MapsProviderDriver>(
+                builder: (context, mapProvider, child) {
+              return GoogleMap(
+                initialCameraPosition: mapProvider.initialCameraPosition,
+                mapType: MapType.normal,
+                myLocationButtonEnabled: true,
+                myLocationEnabled: true,
+                zoomControlsEnabled: true,
+                zoomGesturesEnabled: true,
+                onMapCreated: (GoogleMapController controller) async {
+                  mapControllerDriver.complete(controller);
+                  mapController = controller;
+                  LatLng? crrLocation =
+                      await LocationServices.getCurrentLocation();
+                  if (crrLocation != null) {
+                    CameraPosition cameraPosition = CameraPosition(
+                      target: crrLocation,
+                      zoom: 14,
+                    );
+                    mapController!.animateCamera(
+                        CameraUpdate.newCameraPosition(cameraPosition));
+                  }
+                },
+              );
+            }),
+          ],
+        ),
+      ),
     );
+  }
+  
+  // Extract reusable SwipeButton widget
+  Widget _buildSwipeButton({
+    required String text,
+    required VoidCallback onSwipe,
+  }) {
+    return SwipeButton(
+      key: ValueKey('swipe_$text'), // Add unique key to prevent recreation
+      thumbPadding: EdgeInsets.all(1.w),
+      thumb: Icon(
+        Icons.chevron_right,
+        color: white,
+      ),
+      inactiveThumbColor: black,
+      activeThumbColor: black,
+      inactiveTrackColor: greyShade3,
+      activeTrackColor: greyShade3,
+      elevationThumb: 2,
+      elevationTrack: 2,
+      onSwipe: onSwipe,
+      child: Text(
+        text,
+        style: AppTextStyles.body16Bold,
+      ),
+    );
+  }
+  
+  // Extract swipe handlers to prevent recreation
+  Future<void> _handleGoOnline() async {
+    if (_isProcessingSwipe) return;
+    _isProcessingSwipe = true;
+    
+    try {
+      log('Button is Swiped - Going Online');
+      await GeoFireServices.goOnline();
+      await GeoFireServices.updateLocationRealTime(context);
+    } finally {
+      // Reset flag after a delay to prevent rapid re-triggering
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        if (mounted) {
+          setState(() {
+            _isProcessingSwipe = false;
+          });
+        }
+      });
+    }
+  }
+  
+  Future<void> _handleGoOffline() async {
+    if (_isProcessingSwipe) return;
+    _isProcessingSwipe = true;
+    
+    try {
+      log('Button is Swiped - Going Offline');
+      await GeoFireServices.goOffline(context);
+    } finally {
+      // Reset flag after a delay to prevent rapid re-triggering
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        if (mounted) {
+          setState(() {
+            _isProcessingSwipe = false;
+          });
+        }
+      });
+    }
   }
 }

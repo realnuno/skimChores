@@ -164,7 +164,7 @@ class RideRequestServicesDriver {
       }
 
       final rideData = RideRequestModel.fromMap(
-        Map<String, dynamic>.from(snapshot.value as Map),
+        jsonDecode(jsonEncode(snapshot.value)) as Map<String, dynamic>,
       );
 
       // Update ride status in Firebase

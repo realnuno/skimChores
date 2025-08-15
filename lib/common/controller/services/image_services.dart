@@ -56,9 +56,13 @@ class ImageServices {
         throw Exception("User is not authenticated");
       }
 
-      final String userID = auth.currentUser!.phoneNumber!;
-      final String imageName = '$userID-${const Uuid().v1()}';
-      final Reference ref = storage.ref().child('Profile_Images').child(imageName);
+      final String userID = auth.currentUser!.uid;
+      final String imageName = '${const Uuid().v1()}';
+      final Reference ref = storage.ref()
+        .child('user_uploads')
+        .child(userID)
+        .child('profile_images')
+        .child(imageName);
 
       final uploadTask = await ref.putFile(image);
       final imageUrl = await uploadTask.ref.getDownloadURL();

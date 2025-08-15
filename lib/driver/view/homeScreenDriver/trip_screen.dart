@@ -79,100 +79,102 @@ class _BookARideScreenState extends State<TripScreen> {
                                   as Map<String, dynamic>);
                       if (rideRequestData.rideStatus ==
                           RideRequestServicesDriver.getRideStatus(1)) {
-                        return Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(
-                              'Enter OTP to Start Trip',
-                              style: AppTextStyles.body16Bold,
-                            ),
-                            PinCodeTextField(
-                              appContext: context,
-                              length: 4,
-                              obscureText: false,
-                              animationType: AnimationType.fade,
-                              textStyle: AppTextStyles.body14,
-                              pinTheme: PinTheme(
-                                  shape: PinCodeFieldShape.box,
-                                  borderRadius: BorderRadius.circular(5.sp),
-                                  fieldHeight: 50,
-                                  fieldWidth: 50,
-                                  activeFillColor: white,
-                                  inactiveColor: greyShade3,
-                                  inactiveFillColor: greyShade3,
-                                  selectedFillColor: white,
-                                  selectedColor: black,
-                                  activeColor: black),
-                              animationDuration:
-                                  const Duration(milliseconds: 300),
-                              backgroundColor: transparent,
-                              enableActiveFill: true,
-                              errorAnimationController: errorController,
-                              controller: otpController,
-                              onCompleted: (value) async {
-                                if (otpController.text.trim() ==
-                                    context
-                                        .read<RideRequestProviderDriver>()
-                                        .rideRequestData!
-                                        .otp) {
-                                  LatLng? pickupLocation = await LocationServices
-                                      .getCurrentLocation();
-                                  if (pickupLocation == null) {
-                                    // Handle case where location permission is denied
-                                    if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Location permission denied. Please enable location services.'),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
+                        return SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                'Enter OTP to Start Trip',
+                                style: AppTextStyles.body16Bold,
+                              ),
+                              PinCodeTextField(
+                                appContext: context,
+                                length: 4,
+                                obscureText: false,
+                                animationType: AnimationType.fade,
+                                textStyle: AppTextStyles.body14,
+                                pinTheme: PinTheme(
+                                    shape: PinCodeFieldShape.box,
+                                    borderRadius: BorderRadius.circular(5.sp),
+                                    fieldHeight: 50,
+                                    fieldWidth: 50,
+                                    activeFillColor: white,
+                                    inactiveColor: greyShade3,
+                                    inactiveFillColor: greyShade3,
+                                    selectedFillColor: white,
+                                    selectedColor: black,
+                                    activeColor: black),
+                                animationDuration:
+                                    const Duration(milliseconds: 300),
+                                backgroundColor: transparent,
+                                enableActiveFill: true,
+                                errorAnimationController: errorController,
+                                controller: otpController,
+                                onCompleted: (value) async {
+                                  if (otpController.text.trim() ==
+                                      context
+                                          .read<RideRequestProviderDriver>()
+                                          .rideRequestData!
+                                          .otp) {
+                                    LatLng? pickupLocation = await LocationServices
+                                        .getCurrentLocation();
+                                    if (pickupLocation == null) {
+                                      // Handle case where location permission is denied
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Location permission denied. Please enable location services.'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                      return;
                                     }
-                                    return;
-                                  }
-                                  
-                                  LatLng dropLocation = LatLng(
-                                      context
-                                          .read<RideRequestProviderDriver>()
-                                          .dropLocation!
-                                          .latitude!,
-                                      context
-                                          .read<RideRequestProviderDriver>()
-                                          .dropLocation!
-                                          .longitude!);
-                                  await DirectionServices
-                                      .getDirectionDetailsDriver(pickupLocation,
-                                          dropLocation, context);
-                                  context
-                                      .read<RideRequestProviderDriver>()
-                                      .decodePolylineAndUpdatePolylineField();
-                                  context
-                                      .read<RideRequestProviderDriver>()
-                                      .updateUpdateMarkerStatus(true);
-                                  context
-                                      .read<RideRequestProviderDriver>()
-                                      .updateMovingFromCurrentLocationToPickupLocationStatus(
-                                          false);
-                                  context
-                                      .read<RideRequestProviderDriver>()
-                                      .updateMarker();
-
-                                  RideRequestServicesDriver
-                                      .updateRideRequestStatus(
-                                    RideRequestServicesDriver.getRideStatus(2),
+                                    
+                                    LatLng dropLocation = LatLng(
+                                        context
+                                            .read<RideRequestProviderDriver>()
+                                            .dropLocation!
+                                            .latitude!,
+                                        context
+                                            .read<RideRequestProviderDriver>()
+                                            .dropLocation!
+                                            .longitude!);
+                                    await DirectionServices
+                                        .getDirectionDetailsDriver(pickupLocation,
+                                            dropLocation, context);
                                     context
                                         .read<RideRequestProviderDriver>()
-                                        .rideRequestData!
-                                        .riderProfile
-                                        .mobileNumber!,
-                                  );
-                                }
-                              },
-                              onChanged: (value) {},
-                              beforeTextPaste: (text) {
-                                return true;
-                              },
-                            ),
-                          ],
+                                        .decodePolylineAndUpdatePolylineField();
+                                    context
+                                        .read<RideRequestProviderDriver>()
+                                        .updateUpdateMarkerStatus(true);
+                                    context
+                                        .read<RideRequestProviderDriver>()
+                                        .updateMovingFromCurrentLocationToPickupLocationStatus(
+                                            false);
+                                    context
+                                        .read<RideRequestProviderDriver>()
+                                        .updateMarker();
+
+                                    RideRequestServicesDriver
+                                        .updateRideRequestStatus(
+                                      RideRequestServicesDriver.getRideStatus(2),
+                                      context
+                                          .read<RideRequestProviderDriver>()
+                                          .rideRequestData!
+                                          .riderProfile
+                                          .mobileNumber!,
+                                    );
+                                  }
+                                },
+                                onChanged: (value) {},
+                                beforeTextPaste: (text) {
+                                  return true;
+                                },
+                              ),
+                            ],
+                          ),
                         );
                       } else {
                         return SwipeButton(

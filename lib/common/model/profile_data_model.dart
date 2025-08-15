@@ -2,6 +2,7 @@ import 'dart:convert';
 
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 class ProfileDataModel {
+  String? uid;
   String? name;
   String? profilePicUrl;
   String? mobileNumber;
@@ -17,6 +18,7 @@ class ProfileDataModel {
   String? driverStatus;
   String? cloudMessagingToken;
   ProfileDataModel({
+    this.uid,
     this.name,
     this.profilePicUrl,
     this.mobileNumber,
@@ -35,6 +37,7 @@ class ProfileDataModel {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
+      'uid': uid,
       'name': name,
       'profilePicUrl': profilePicUrl,
       'mobileNumber': mobileNumber,
@@ -54,6 +57,7 @@ class ProfileDataModel {
 
   factory ProfileDataModel.fromMap(Map<String, dynamic> map) {
     return ProfileDataModel(
+      uid: map['uid'] != null ? map['uid'] as String : null,
       name: map['name'] != null ? map['name'] as String : null,
       profilePicUrl:
           map['profilePicUrl'] != null ? map['profilePicUrl'] as String : null,

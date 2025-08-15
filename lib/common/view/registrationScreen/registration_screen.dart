@@ -153,6 +153,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     // Create and register profile
     ProfileDataModel profileData = ProfileDataModel(
+      uid: auth.currentUser!.uid,
       profilePicUrl: profilePicURL,
       name: nameController.text.trim(),
       mobileNumber: auth.currentUser!.phoneNumber!,
@@ -161,8 +162,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       vehicleBrandName: vehicleBrandNameController.text.trim(),
       vehicleModel: vehicleModelNameColtroller.text.trim(),
       vehicleType: selectedVehicleType,
-      vehicleRegistrationNumber: vehicleRegistrationNumberController.text
-          .trim(),
+      vehicleRegistrationNumber: vehicleRegistrationNumberController.text.trim(),
       drivingLicenseNumber: drivingLicenseNumberController.text.trim(),
       registeredDateTime: DateTime.now(),
     );
@@ -220,6 +220,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
 
     ProfileDataModel profileData = ProfileDataModel(
+      uid: auth.currentUser!.uid,
       profilePicUrl: profilePicURL,
       name: nameController.text.trim(),
       mobileNumber: auth.currentUser!.phoneNumber!,

@@ -27,12 +27,21 @@ class HomeScreenDriver extends StatefulWidget {
 class _HomeScreenDriverState extends State<HomeScreenDriver> {
   Completer<GoogleMapController> mapControllerDriver = Completer();
   GoogleMapController? mapController;
-  DatabaseReference driverProfileRef = FirebaseDatabase.instance
-      .ref()
-      .child('User/${auth.currentUser!.phoneNumber}');
-      
-  // Add flag to prevent multiple executions
+  String? _driverStatus;
   bool _isProcessingSwipe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseDatabase.instance
+        .ref()
+        .child('User/${auth.currentUser!.phoneNumber}/driverStatus')
+        .onValue
+        .listen((event) {
+      final status = event.snapshot.value as String?;
+      if (mounted) setState(() => _driverStatus = status);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,51 +57,10 @@ class _HomeScreenDriverState extends State<HomeScreenDriver> {
             child: Row(
               children: [
                 Expanded(
-                  child: StreamBuilder(
-                    stream: driverProfileRef.onValue,
-                    builder: (context, event) {
-                      if (event.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: CircularProgressIndicator(
-                            color: black,
-                          ),
-                        );
-                      }
-                      
-                      if (event.data == null) {
-                        return _buildSwipeButton(
-                          text: 'Go Online',
-                          onSwipe: _handleGoOnline,
-                        );
-                      }
-                      
-                      try {
-                        ProfileDataModel profileData = ProfileDataModel.fromMap(
-                            jsonDecode(jsonEncode(event.data!.snapshot.value))
-                                as Map<String, dynamic>);
-                        
-                        log(profileData.driverStatus.toString());
-                        
-                        if (profileData.driverStatus == 'ONLINE') {
-                          return _buildSwipeButton(
-                            text: 'Go Offline',
-                            onSwipe: _handleGoOffline,
-                          );
-                        } else {
-                          return _buildSwipeButton(
-                            text: 'Go Online',
-                            onSwipe: _handleGoOnline,
-                          );
-                        }
-                      } catch (e) {
-                        log('Error parsing profile data: $e');
-                        return Center(
-                          child: CircularProgressIndicator(
-                            color: black,
-                          ),
-                        );
-                      }
-                    },
+                  child: _buildSwipeButton(
+                    text: _driverStatus == 'ONLINE' ? 'Go Offline' : 'Go Online',
+                    onSwipe: _driverStatus == 'ONLINE' ? _handleGoOffline : _handleGoOnline,
+                    isProcessing: _isProcessingSwipe,
                   ),
                 ),
               ],
@@ -132,13 +100,12 @@ class _HomeScreenDriverState extends State<HomeScreenDriver> {
     );
   }
   
-  // Extract reusable SwipeButton widget
   Widget _buildSwipeButton({
     required String text,
     required VoidCallback onSwipe,
+    required bool isProcessing,
   }) {
     return SwipeButton(
-      key: ValueKey('swipe_$text'), // Add unique key to prevent recreation
       thumbPadding: EdgeInsets.all(1.w),
       thumb: Icon(
         Icons.chevron_right,
@@ -150,7 +117,7 @@ class _HomeScreenDriverState extends State<HomeScreenDriver> {
       activeTrackColor: greyShade3,
       elevationThumb: 2,
       elevationTrack: 2,
-      onSwipe: onSwipe,
+      onSwipe: isProcessing ? null : onSwipe,
       child: Text(
         text,
         style: AppTextStyles.body16Bold,

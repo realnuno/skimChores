@@ -30,13 +30,9 @@ class _DriverHomeScreeBuilderState extends State<DriverHomeScreeBuilder> {
   // Track previous ride count to detect new requests
   int previousRideCount = 0;
   bool hasShownNotification = false;
-  
-  // Reset notification flag when needed
-  void _resetNotificationFlag() {
-    hasShownNotification = false;
-    log('🔄 Notification flag reset - ready for new notifications');
-  }
-      
+  String? lastShownRideKey;
+  Map<String, DateTime> deniedRequests = {}; // key: riderID, value: deny time
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -59,19 +55,22 @@ class _DriverHomeScreeBuilderState extends State<DriverHomeScreeBuilder> {
                   if (rideEvent.connectionState == ConnectionState.waiting) {
                     return const HomeScreenDriver();
                   }
-                  
                   // Check for available ride requests
                   if (rideEvent.data != null && rideEvent.data!.snapshot.value != null) {
                     Map<dynamic, dynamic> rideRequests = 
                         Map<dynamic, dynamic>.from(rideEvent.data!.snapshot.value as Map);
-                    
-                    // Find ride requests without drivers
+                    final now = DateTime.now();
+                    // Clean up deniedRequests entries older than 10 minutes
+                    deniedRequests.removeWhere((key, deniedAt) => now.difference(deniedAt).inMinutes >= 10);
+                    // Find ride requests without drivers, filter out denied
                     List<MapEntry<dynamic, dynamic>> availableRides = rideRequests.entries
                         .where((entry) {
                           try {
-                            Map<String, dynamic> rideData = 
-                                Map<String, dynamic>.from(entry.value as Map);
-                            // Check if ride has no driver and is waiting
+                            Map<String, dynamic> rideData = Map<String, dynamic>.from(entry.value as Map);
+                            final riderId = rideData['riderProfile']?['mobileNumber'];
+                            if (riderId != null && deniedRequests.containsKey(riderId)) {
+                              return false; // Denied within last 10 minutes
+                            }
                             return rideData['driverProfile'] == null && 
                                    rideData['rideStatus'] == 'WAITING_FOR_RIDE_REQUEST';
                           } catch (e) {
@@ -79,38 +78,25 @@ class _DriverHomeScreeBuilderState extends State<DriverHomeScreeBuilder> {
                           }
                         })
                         .toList();
-                    
                     if (availableRides.isNotEmpty) {
                       log('Found ${availableRides.length} available ride requests');
-                      
-                      // Check if this is a new ride request (count increased)
-                      if (availableRides.length > previousRideCount && !hasShownNotification) {
-                        log('🚨 New ride request detected! Showing notification...');
-                        
-                        // Schedule notification to show after build is complete
+                      final firstRideKey = availableRides.first.key.toString();
+                      if ((!hasShownNotification || lastShownRideKey != firstRideKey)) {
+                        log('🚨 New or re-shown ride request detected! Showing notification...');
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           _showNewRideNotification(availableRides.first);
                         });
-                        
-                        // Update tracking
-                        previousRideCount = availableRides.length;
                         hasShownNotification = true;
-                      } else if (availableRides.length != previousRideCount) {
-                        // Update count if it changed
-                        previousRideCount = availableRides.length;
-                        
-                        // If count decreased (ride was accepted), reset notification flag
-                        if (availableRides.length < previousRideCount) {
-                          _resetNotificationFlag();
-                        }
+                        lastShownRideKey = firstRideKey;
                       }
+                      previousRideCount = availableRides.length;
                     } else {
                       // Reset tracking when no rides available
                       previousRideCount = 0;
                       hasShownNotification = false;
+                      lastShownRideKey = null;
                     }
                   }
-                  
                   return const HomeScreenDriver();
                 },
               );
@@ -120,7 +106,7 @@ class _DriverHomeScreeBuilderState extends State<DriverHomeScreeBuilder> {
           }
         });
   }
-  
+
   void _showNewRideNotification(MapEntry<dynamic, dynamic> rideEntry) {
     try {
       // Fix type casting issue by using jsonEncode/jsonDecode to convert Firebase types
@@ -128,9 +114,21 @@ class _DriverHomeScreeBuilderState extends State<DriverHomeScreeBuilder> {
           jsonDecode(jsonEncode(rideEntry.value)) as Map<String, dynamic>;
       
       RideRequestModel rideRequestModel = RideRequestModel.fromMap(rideData);
-      
+      final riderId = rideData['riderProfile']?['mobileNumber'];
       // Show the existing PushNotificationDialouge
-      PushNotificationDialouge.rideRequestDialogue(rideRequestModel, context);
+      PushNotificationDialouge.rideRequestDialogue(
+        rideRequestModel,
+        context,
+        onDeny: () {
+          setState(() {
+            hasShownNotification = false;
+            lastShownRideKey = null;
+            if (riderId != null) {
+              deniedRequests[riderId] = DateTime.now();
+            }
+          });
+        },
+      );
       
       log('✅ Showing push notification dialogue for ride: ${rideEntry.key}');
     } catch (e) {

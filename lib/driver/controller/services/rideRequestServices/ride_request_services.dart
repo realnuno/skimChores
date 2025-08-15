@@ -30,7 +30,7 @@ class RideRequestServicesDriver {
           );
           if (rideRequestModel.driverProfile != null) {
             audioPlayer.stop();
-            Navigator.pop(context);
+            if (context.mounted) Navigator.pop(context);
             if (!context.mounted) return;
             ToastServices.sendScaffoldAlert(
               msg: 'Opps! Trip accepted by someone',
@@ -40,7 +40,7 @@ class RideRequestServicesDriver {
           }
         } else {
           audioPlayer.stop();
-          Navigator.pop(context);
+          if (context.mounted) Navigator.pop(context);
           if (!context.mounted) return;
           ToastServices.sendScaffoldAlert(
             msg: 'Opps! Ride Was Cancelled',
@@ -50,7 +50,7 @@ class RideRequestServicesDriver {
         }
       });
     } else {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
     }
   }
 

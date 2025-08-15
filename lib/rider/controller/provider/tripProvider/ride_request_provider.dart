@@ -257,8 +257,10 @@ class RideRequestProvider extends ChangeNotifier {
     int index = nearbyDrivers.indexWhere(
       (element) => element.driverID == driverID,
     );
-    nearbyDrivers.removeAt(index);
-    notifyListeners();
+    if (index >= 0) {
+      nearbyDrivers.removeAt(index);
+      notifyListeners();
+    }
   }
 
   updateNearbyLocation(NearByDriversModel driver) {

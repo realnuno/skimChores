@@ -68,6 +68,7 @@ class GeoFireServices {
       locationProvider.updateDriverPosition(event);
 
       if (userPhone != null) {
+        Geofire.initialize('OnlineDrivers'); // Ensure always initialized
         Geofire.setLocation(userPhone, event.latitude, event.longitude);
       }
     });

@@ -260,14 +260,13 @@ class _BookARideScreenState extends State<BookARideScreen> {
                     );
 
                     if (rideData.driverProfile == null) {
+                      // Stop listening to previous driver location if any
+                      rideRequestProvider.stopListeningToDriverLocation();
                       return searchingForRide();
                     } else {
                       if (rideData.driverProfile != null) {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (rideRequestProvider.updateMarkerBool == false) {
-                            rideRequestProvider.updateUpdateMarkerBool(true);
-                            rideRequestProvider.updateMarker();
-                          }
+                          rideRequestProvider.updateMarkerWithDriver(rideData);
                           if (rideRequestProvider.fetchNearbyDrivers == true) {
                             rideRequestProvider.updateFetchNearbyDrivers(false);
                           }

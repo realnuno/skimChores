@@ -21,10 +21,12 @@ class _OTPScreenState extends State<OTPScreen> {
   TextEditingController otpController = TextEditingController();
   StreamController<ErrorAnimationType> errorController =
       StreamController<ErrorAnimationType>();
+  bool _isDisposed = false;
 
   decreaseNum() {
     if (num > 0) {
       Future.delayed(const Duration(seconds: 1), () {
+        if (_isDisposed || !mounted) return;
         setState(() {
           num = num - 1;
         });
@@ -43,6 +45,7 @@ class _OTPScreenState extends State<OTPScreen> {
 
   @override
   void dispose() {
+    _isDisposed = true;
     otpController.dispose();
     errorController.close();
     super.dispose();

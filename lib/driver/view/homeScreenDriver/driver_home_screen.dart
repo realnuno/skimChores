@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:firebase_database/firebase_database.dart';
@@ -9,13 +8,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:new_uber/common/controller/services/location_services.dart';
-import 'package:new_uber/common/model/profile_data_model.dart';
 import 'package:new_uber/constant/constants.dart';
 import 'package:new_uber/constant/utils/colors.dart';
 import 'package:new_uber/constant/utils/textStyles.dart';
 import 'package:new_uber/driver/controller/services/geofire_services.dart';
 import 'package:new_uber/driver/controller/services/maps_provider_driver.dart';
-import 'package:new_uber/driver/controller/services/rideRequestServices/ride_request_services.dart';
 
 class HomeScreenDriver extends StatefulWidget {
   const HomeScreenDriver({super.key});
@@ -33,13 +30,15 @@ class _HomeScreenDriverState extends State<HomeScreenDriver> {
   @override
   void initState() {
     super.initState();
-    FirebaseDatabase.instance
-        .ref()
-        .child('User/${auth.currentUser!.phoneNumber}/driverStatus')
-        .onValue
-        .listen((event) {
+    final driverStatusRef = FirebaseDatabase.instance
+      .ref()
+      .child('User/${auth.currentUser!.phoneNumber}/driverStatus');
+    driverStatusRef.onValue.listen((event) {
       final status = event.snapshot.value as String?;
       if (mounted) setState(() => _driverStatus = status);
+      if (status == 'ONLINE') {
+        GeoFireServices.updateLocationRealTime(context);
+      }
     });
   }
 

@@ -78,6 +78,17 @@ class MobileAuthServices {
   static Future<void> checkAuthenticationAndNavigate({
     required BuildContext context,
   }) async {
+    if (auth.currentUser == null) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageTransition(
+          child: const LoginScreen(),
+          type: PageTransitionType.rightToLeft,
+        ),
+        (route) => false,
+      );
+      return;
+    }
     bool userIsAuthenticated = checkAuthentication();
     if (userIsAuthenticated) {
       await checkUser(context); // also mark checkUser as async

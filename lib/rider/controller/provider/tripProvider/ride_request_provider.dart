@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:math' as math;
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,9 +11,12 @@ import 'package:new_uber/common/model/direction_model.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:new_uber/common/model/pickup_n_drop_location_model.dart';
 import 'package:new_uber/common/model/profile_data_model.dart';
+import 'package:new_uber/common/model/ride_request_model.dart';
 import 'package:new_uber/constant/constants.dart';
 import 'package:new_uber/constant/utils/colors.dart';
 import 'package:new_uber/rider/model/nearby_drivers_model.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 
 class RideRequestProvider extends ChangeNotifier {
   CameraPosition initialCameraPosition = const CameraPosition(
@@ -270,5 +274,72 @@ class RideRequestProvider extends ChangeNotifier {
     nearbyDrivers[index].longitude = driver.longitude;
     nearbyDrivers[index].latitude = driver.latitude;
     notifyListeners();
+  }
+
+  StreamSubscription<DatabaseEvent>? _driverLocationSubscription;
+  String? _currentTrackedDriverId;
+
+  void listenToAssignedDriverLocation(String driverId) {
+    if (_currentTrackedDriverId == driverId && _driverLocationSubscription != null) return;
+    _driverLocationSubscription?.cancel();
+    _currentTrackedDriverId = driverId;
+    final driverLocationRef = FirebaseDatabase.instance.ref().child('OnlineDrivers/$driverId');
+    _driverLocationSubscription = driverLocationRef.onValue.listen((event) {
+      final data = event.snapshot.value;
+      if (data != null && data is Map) {
+        final lat = data['l']?[0];
+        final lng = data['l']?[1];
+        if (lat != null && lng != null) {
+          _updateDriverMarker(LatLng(lat, lng), driverId);
+        }
+      }
+    });
+  }
+
+  void stopListeningToDriverLocation() {
+    _driverLocationSubscription?.cancel();
+    _driverLocationSubscription = null;
+    _currentTrackedDriverId = null;
+  }
+
+  void _updateDriverMarker(LatLng position, String driverId) {
+    // Remove any previous driver marker
+    riderMarker.removeWhere((m) => m.markerId.value == driverId);
+    // Add new driver marker
+    final marker = Marker(
+      markerId: MarkerId(driverId),
+      position: position,
+      icon: carIconForMap!,
+    );
+    riderMarker.add(marker);
+    notifyListeners();
+  }
+
+  Future<void> updateMarkerWithDriver(RideRequestModel rideRequest) async {
+    riderMarker.clear();
+    // Add pickup and drop markers
+    Marker pickupMarker = Marker(
+      markerId: const MarkerId('PickupMarker'),
+      position: LatLng(rideRequest.pickupLocation.latitude!, rideRequest.pickupLocation.longitude!),
+      icon: pickupIconForMap!,
+    );
+    Marker destinationMarker = Marker(
+      markerId: const MarkerId('DropMarker'),
+      position: LatLng(rideRequest.dropLocation.latitude!, rideRequest.dropLocation.longitude!),
+      icon: destinationIconForMap!,
+    );
+    riderMarker.add(pickupMarker);
+    riderMarker.add(destinationMarker);
+    notifyListeners();
+    // Listen to driver's real-time location
+    if (rideRequest.driverProfile != null && rideRequest.driverProfile!.mobileNumber != null) {
+      listenToAssignedDriverLocation(rideRequest.driverProfile!.mobileNumber!);
+    }
+  }
+
+  @override
+  void dispose() {
+    stopListeningToDriverLocation();
+    super.dispose();
   }
 }

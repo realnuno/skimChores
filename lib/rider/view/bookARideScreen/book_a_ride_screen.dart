@@ -478,7 +478,7 @@ class _BookARideScreenState extends State<BookARideScreen> {
                           fare: getFare(selectedCarType).toString(),
                           carType: getCarType(selectedCarType),
                           rideStatus: RideRequestServices.getRideStatus(0),
-                          otp: math.Random().nextInt(9999).toString(),
+                          otp: (math.Random().nextInt(9000) + 1000).toString()
                         );
 
                         RideRequestServices.createNewRideRequest(

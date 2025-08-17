@@ -33,6 +33,7 @@ class _PickupAndDropLocationScreenState
   FocusNode pickupLocationFocus = FocusNode();
   String locationType = 'DROP';
   bool isNavigating = false; // Add this to prevent multiple navigation calls
+  bool isDropLocationSelecting = false;
 
   getCurrentAddress() async {
     LatLng? crrLocation = await LocationServices.getCurrentLocation();
@@ -337,7 +338,11 @@ class _PickupAndDropLocationScreenState
                       locationProvider.searchedAddress[index];
                   return ListTile(
                     onTap: () async {
+                      if (isDropLocationSelecting) return;
                       if (locationType == 'DROP') {
+                        setState(() {
+                          isDropLocationSelecting = true;
+                        });
                         dropLocationController.text = currentAddress.mainName;
                       } else {
                         pickupLocationController.text = currentAddress.mainName;
@@ -347,7 +352,10 @@ class _PickupAndDropLocationScreenState
                         context,
                         locationType,
                       );
-                      navigateToBookRideScreen();
+                      await navigateToBookRideScreen();
+                      setState(() {
+                        isDropLocationSelecting = false;
+                      });
                     },
                     leading: CircleAvatar(
                       backgroundColor: greyShade3,
